@@ -1,0 +1,6 @@
+This recommendation focuses on using file name conventions that ensure your software runs as intended and is properly secured.
+The rule notes that you should avoid a variety of characters when creating or taking in the name of a file for it to be a proper file name.
+The characters which you should avoid according to the rule include leading dashes, control characters, spaces, invalid character encodings, and namespace prefixes or conventions.
+The avoidance of these characters ensures that your software will operate as expected in different environments and will prevent security issues that can be introduced otherwise.
+If any of these characters are used it may lead to improper interpretation of the file and or allow files to used as an attack surface by bad actors.
+The way it recommends to avoid these problems is to simply check any input from untrusted sources such as a user for any of the things we mentioned and ensure you handle the case where the operating system your software is running on blocks a file with that name properly.

@@ -1,0 +1,6 @@
+The implementation of this recommendation makes sure that commonly overlooked details when creating a file are properly taken care of.
+Some of those things include, checking whether the file already exists, handling when the file is not able to be created, and ensuring the file has proper permissions.
+It mentions that most of the time file creating is usually done with just a single method call and these details are frequently looked over which can lead to a variety of problems.
+If handled improperly you could overwrite existing files, create race conditions which can be exploited, and having improper permissions on the files that you are working with.
+In order to avoid all of these problems, the rule simply recommends using a newer method implemented in java which creates files atomically and handles cases such as the file already existing which eliminates the forementioned problems which is java.nio.file.Files.newOutputStream().
+So long as you are using this method for file creation, you can avoid all those problems including permission issues and safe creation of the file.

@@ -1,0 +1,7 @@
+The importance of this recommendation lies in the fact that it prevents logic in your software that could lead to unexpected operation as well as major security risks.
+The name of a file is something that could be easily overlooked but this rule ensures that you pay the proper attention to it so that you avoid the forementioned problems.
+In the case you use an improper file name it can lead to issues trying to use it with a command line tool since it could try to interpret it as a flag for the tool rather than an argument.
+Similarly, if you had a space it could possibly detect your file name as two arguments rather than the 1 file name argument as an example.
+It can also interfere with things such as logging where if we have something like a new line character it could display that new line in the logs and throw of the format.
+Aside from those problems I just mentioned that just affect if the software operates properly, there is also some more dangerous things it introduces including attack vectors.
+If you take a file name from an unverified source such as a random user and it is not sanitized, they can use the naming of files as an attack vector to extract data from that file or even worse depending on their knowledge of the software.
