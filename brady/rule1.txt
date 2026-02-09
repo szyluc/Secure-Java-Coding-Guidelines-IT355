@@ -32,5 +32,6 @@ class DirList {
       }
    }
    // You can then use this class as your directory reference, and it will only accept directories from the directoryFile
-   // This ensures that it will never even run Runtime.exec() if it is not needed.
+   // This ensures that it will never run Runtime.exec() if it is not needed.
    }
+
