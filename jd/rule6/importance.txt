@@ -1,0 +1,5 @@
+This specific rule is very important as it ensures that developers are using the right method for the right task and not using this method which may be misleading.
+There has been many cases where the Object.equals() method was used with arrays thinking it checks the contents for equality when it checks the reference which can lead to flawed logic in your system if you are expecting it to check the contents.
+The use of these more specific methods or operators rather than the general equals method ensures that developers are perform the action on the array that they expect so that their program logic executes as expected.
+This simple rule ensures that developers avoid the generalized equals method when comparing arrays in general to just avoid the whole problem.
+Overall, the use of the equals method for objects in java can just be confusing, so the use of these clearer operators and objects for comparing contents as well as comparing references ensure that developers don't get confused and can clearly tell what the code is doing without guessing whether it is comparing the contents or reference of the arrays.

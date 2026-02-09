@@ -1,0 +1,4 @@
+The implementation of this rule is important as it ensures the integrity of the data on the system as well as makes sure that operation is not interfered with.
+In the case that a program were to be abruptly terminated and it were not following this rule such that cleanup was never performed, it could lead to an array of problems such as files not being saved or locks not being released.
+If you spent a while processing some data and writing to a file and the program crashed all the sudden without the file being closed, you could lose all the output meaning you have wasted all the time that program was executing.
+Also, I mentioned how it could leave locks in limbo leaving other programs unable to get resources they need and interfering with operation of the system outside of just your program and what it was working with which is why it is important to follow this rule so that your program performs proper cleanup on termination.

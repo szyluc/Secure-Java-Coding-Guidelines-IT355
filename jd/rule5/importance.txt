@@ -1,0 +1,7 @@
+This particular rule is very important as it can allow some very dangerous attack vectors open to bad actors if it is not followed properly.
+In the case that you have a value that is public, static, and nonfinal, there is no security checks on client access as we mentioned which opens a ton of problems.
+Aside from the no security checks, it also prevents you from validating values before stored and can lead to problems working with threads which lead to inconsistent values as well as introduces some type-safety issues as we discussed.
+These other problems can further introduce more security risks and can hinder the operation of your software.
+As an example, if you don’t properly follow this rule, someone could set a bad value that leads to your program behaving improperly and there isn’t anything you can do because you couldn’t validate it.
+Also, in the case you are working with threads values could be comprised as they aren’t thread safe which could lead to problems in the operation in your software.
+One last final example and arguably the worst is you could have a bad actor attack your system by modifying fields they have access to which can allow them to change how the software operates and allow them to do things with it they shouldn’t be able to do.

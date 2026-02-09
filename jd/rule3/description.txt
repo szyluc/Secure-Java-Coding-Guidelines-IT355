@@ -1,0 +1,5 @@
+The perform proper cleanup at program termination rule is meant to prevent the corruption of data during abrupt termination of a program.
+If a program has active resources such as a open file and does not have a proper way setup to handle cleanup on termination there is a risk of data corruption.
+As an example, If the program runs into an unrecoverable error, an error where the program restarts to fix the error, or the user manually terminates the program, any data we have written to a file may not save if we didn't properly close it.
+The rule covers a couple things you can do to avoid this problem though including explicitly handling cleanups or using shutdown hooks.
+If the program is manually exiting the program it can handle the cleanup explicitly before exiting but for unexpected situations like an unrecoverable error or the user abruptly shutting down the program we can use the shutdown hook which will complete our cleanup tasks on termination of the program such as closing a file or whatever we would do explicitly if we were going to shutdown the program ourselves.

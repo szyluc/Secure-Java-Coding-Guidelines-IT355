@@ -1,0 +1,4 @@
+This particular rule notes that before validating external input such as input from a user or a third-party source, you must perform normalization on it.
+Since Unicode for the exact same strings can have different interpretations, it is important that you first perform normalization on the string to get the final representation before performing validation.
+After you have normalized the string, you can properly perform validation on the string to ensure that it meets whatever guidelines or restrictions that you might have for it as well as that it is not a risk such as an attempt for XML or SQL injection that might have been disguised within the Unicode.
+If validation were performed before normalization, these same checks that caught a problem could have let them slip through due to the ambiguous interpretation of the string before normalization.

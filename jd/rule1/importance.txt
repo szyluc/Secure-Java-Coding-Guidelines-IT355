@@ -1,0 +1,5 @@
+This rule ensures that we properly detect the end of stream value and end the stream when we come across the value that signifies that.
+If you don’t follow this rule and your code is non-compliant, it can lead to either not detecting the end of stream value or incorrectly detecting the end of stream value.
+If you are working with characters and don't check before you cast, it will make it so that the end of stream value isn't detected as such and therefore you won’t know you have reached the end while your program is left hanging.
+On the other hand if you are working the byes, some input that is not the end of stream value can be detected as such if you don't check before casting which can lead to the end of stream being detected and the input will be cut off before you have actually reached the end so you won't have all the input for your application.
+This rule ensures that if followed, we will distinguish bytes or characters from the end of stream value properly, so we don't have any issues as far as finding the end of a stream of input too early or not finding it at all.
