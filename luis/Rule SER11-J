@@ -1,0 +1,27 @@
+/*
+SER11-J: Prevent overwriting of externalizable objects
+
+For code that utilizes the Externalizable interface and its respective methods, it will 
+allow for any code to have access. To ensure only authorized code can utilize it, 
+it must have checks to avoid overwriting, such as Booleans that hold flags. 
+
+This is a simple rule to prevent multiple initialization and is mostly made to avoid 
+unauthorized multiple overwriting. It is by no means a substitute to protect sensitive data.
+*/
+
+private final Obj lock = new Obj();
+private boolean init = false;
+
+public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException{
+  synchronized(lock){
+    if(!init){
+      //Begin reading instance fields
+      this.name = (String) in.readObject();
+      this.UID = in.readInt();
+      //...
+      init = true;
+    } else {
+      throw new IllegalStateException();
+    }
+  }
+}
