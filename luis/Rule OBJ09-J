@@ -1,0 +1,21 @@
+/*
+OBJ09-J: Compare classes and not class names 
+
+When wanting to compare the values in a class for verification or one 
+to another, ensure you do not just check a class’ name but rather its true class value. 
+
+By avoiding simply calling, say, an equals() to a class’ name, 
+calling some kind of getClass() method and acquiring its class truly will prevent 
+malicious attempts to have unqualified classes from passing through just because 
+it has the same name as the qualified class. 
+*/
+
+if(x.getClass() == y.getClass()){
+  //Objects have the same class
+}
+
+//...
+
+if(x.getClass() == com.application.auth.DefaultAuthenticationHandler.class){
+  //Object x has correct name
+}
