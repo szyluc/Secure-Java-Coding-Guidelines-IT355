@@ -1,0 +1,14 @@
+/*
+FIO02-J: Detect and handle file-related errors
+
+When handling file error checks, make sure you actually account for them since Java, 
+as a language, gives return values to file executions, such as the delete()command. 
+
+This actually ensures that you don’t just assume simply calling a file command did 
+the job but that a correct result occurred by checking the return of a command. 
+*/
+
+File foo = new File("foo");
+if(!file.delete()){
+  //Deletion failed, handle error
+}
