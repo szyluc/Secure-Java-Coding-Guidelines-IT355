@@ -1,0 +1,1 @@
+OBJ10-J: Do not use public static nonfinal fields

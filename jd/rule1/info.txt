@@ -1,0 +1,1 @@
+FIO08-J: Distinguish between characters or bytes read from a stream and -1
