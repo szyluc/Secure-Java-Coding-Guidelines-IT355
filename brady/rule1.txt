@@ -1,0 +1,36 @@
+/* IDS07-J. Sanitize untrusted data passed to the Runtime.exec() method
+   When taking in unsanitized data (data that has not been processed from an outside source ie. APIs) 
+   It allows a program to be susceptable to a command injection attack
+
+   Runtime.exec() is used to execute a system command in a seperate native process/
+
+   1. This can be handled by only allowing certain whitelisted characters to be passed to Runtime.exec() ie. Aa-zZ, 0-9, @.
+   Even though this is a valid solution, it can reject valid directories. 
+   Also because the command interpreter is system dependent, it doesn't guarantee that it can prevent command injections on every platform a Java program might run.
+   
+   2. The compliant solution prevents command injection by only passing trusted strings to Runtime.exec()
+   The user has control over which string is used but cannot provide string data directly to Runtime.exec()
+   This solution can become unmanagable if you have many available directories. A more scalable solution is to read all directories from a properties file into a java.util.Properties object.
+
+   3. The complete solution is to avoid Runtime.exec() completely.
+   If the task can be performed by not using a system command, then you should always avoid using System.exec().
+   The compliant solution is to use the File.list() method to provide a directory listing, eliminating all threats of a command/argument injection attacks.
+ */
+
+import java.io.File;
+
+
+class DirList {
+   public static void main(String[] args) {
+      File directory = new File(System.getProperty("directoryFile"));
+      if (directory.isDirectory() == false) {
+         System.out.println("Provided file is not a directory");
+      } else {
+         for (int i = 0; i < directory.list().length; i++) {
+            System.out.println(directory.list()[i]);
+         } // Just printing out the contents of the directory file, this code is not needed.
+      }
+   }
+   // You can then use this class as your directory reference, and it will only accept directories from the directoryFile
+   // This ensures that it will never even run Runtime.exec() if it is not needed.
+   }
