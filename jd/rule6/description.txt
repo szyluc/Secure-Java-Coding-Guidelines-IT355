@@ -1,7 +1,0 @@
-The implementation of this rule prevents the use of the Object.equals() method to compare two arrays.
-Since arrays in Java are objects, they have access to all the object methods including the equals method but it does not override the equals method.
-Since it is not overridden, it simply compares the address of the two arrays and only returns two if they reference the same array in memory which is not how it is usually used.
-Since this method is commonly mistaken for checking the content of the two arrays for equality rather than the reference address, it is forbidden to use as there is alternatives they provide to use instead.
-Java also provides an Array.equals() method which takes two arrays as arguments and compares the size and if that matches then the elements of each array for equality.
-Since this is the expected way of comparison when comparing two arrays, this is the recommended solution if you need to do so.
-In the case that you actually do want to check that two arrays reference the same array in memory they recommend using either == or != depending on what you are checking for rather than the Object.equals() method just to keep things clear for all the developers working on the project.

@@ -1,6 +1,0 @@
-The importance of this rule is that it maintains the integrity of the structure as well as values of the data that we are storing.
-If you don’t follow the practices mentioned in this rule, it will allow bad actors to modify the data in ways they shouldn’t be able to, such as overwriting values other than the ones you are trying to get information for.
-This often leads to even more issues than just your data being comprised though that data is often used for other things.
-For example, you may take the input of a user for a quantity of an item they want but without the proper checks they could overwrite the stored price for that item and get it way cheaper than it should be.
-If you are not careful when taking input from users when storing it in XML, it can lead to some very bad situations depending on what you are storing and how you are using it in your application.
-That said, as long as you follow this rule, you can prevent injections like this from happening and keep your data safe.

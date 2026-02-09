@@ -1,5 +1,0 @@
-This particular recommendation details the need to use parentheses to ensure proper order of operations as you expect the software to calculate it.
-It covers how there are certain operators such as << or >> that don’t fit into the order of operations intuitively how most developers think they would which can lead to improper use.
-In order to avoid this problem we can simply use parentheses which makes it explicitly clear to the software as well as the people working with it what exactly is being calculated there and in which order it is being calculated.
-It mentions that using parentheses is not something that is recommended being dependent on but it should be noted that only applies to equations that have side effects.
-In the case that there is no side effects to the equation you can and likely should use parentheses as much as you want to ensure it is clear to the software and to everybody else how exactly the calculation is being done so there is no guessing involved which can lead to issues.

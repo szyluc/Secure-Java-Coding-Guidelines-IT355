@@ -1,5 +1,0 @@
-The idea behind this rule is to prevent XML injection when you are taking user input and storing it in an XML file.
-If you do not carefully check the input of the user that you will be putting in that document, they can insert XML tags which will allow them to modify the document and change data.
-For your code to be complaint with this rule to prevent injection, there are a couple of routes you can take depending on your scenario.
-One common method to prevent injection is to perform input validation so that all the users' input we take will get sanitized before it is used elsewhere and can lead to a situation like we just previously mentioned.
-Also, in certain situations if you aren't working with very flexible data, you can use a XML schema of what you expect everything to look like to cross-reference it against what your schema looks like with the user input to make sure there was not any modification of the structure via injection.

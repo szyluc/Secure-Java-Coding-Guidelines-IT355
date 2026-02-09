@@ -1,6 +1,0 @@
-This recommendation is very important as it prevents the possibility of erasing or corrupting data on the machine the software is running on as well as preventing possible security issues from arising.
-In the case that you don’t properly check if a file exists before creating it you could completely overwrite the file and all the old data in that file will be gone.
-Similarly, if the initial permissions of the file you create are not checked and up to par with what you want, you could be introducing security risks or other problems that could have been fixed with some quick adjustments.
-One of the most important problems this rule avoids though is the race condition that can be created if you don’t use an atomic method like they recommend to solve these issues.
-Attackers can utilize the time between your check for a file existing and creating a file if it is not done in one step to exploit your software.
-In summary, there is a ton of problems and vulnerabilities introduced by not properly creating a file which can be easily avoided so long as you follow this rule and use the new method for file creation.
