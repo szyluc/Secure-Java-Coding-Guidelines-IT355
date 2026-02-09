@@ -1,0 +1,32 @@
+/*
+SER10-J: Avoid memory and resource leaks during serialization
+
+When utilizing serialization, you essentially hold onto a pointer reference that is not immediately 
+taken away by Java’s garbage collection, which allows it to be useable later on in the code’s scope, 
+such as graphical utility. Each time you make a new pointer reference to a serialized pointer, 
+you must ensure it gets cleared up. The quickest way to do this is by calling .reset() when at the 
+end of the current scope. 
+
+Each time you make a new pointer reference to a serialized pointer, this takes up memory in the heap, 
+typically of 1 mb per reference, which can, in the long run, cause bloating in the program and even heap overflow. 
+By ensuring we clean up the serialization process, we save on heap memory. 
+*/
+
+class SerializationData{
+  public static void main(String[] args) throws IOException{
+    ObjectOutputStream out = null;
+    try{
+      out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream("ser.data")));
+      while(SensorData.isAvailable()){
+        //~ 1mb in size
+        SensorData sd = SensorData.readSensorData();
+        out.writeObject(sd);
+        out.reset(); //Resets the stream
+      }
+    } finally {
+      if(out != null){
+        out.close();
+      }
+    }
+  }
+}
