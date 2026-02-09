@@ -1,0 +1,46 @@
+/*
+OBJ11-J: Be wary of letting constructors throw exceptions
+
+While undergoing construction, an object is left only partially initialized, 
+and when under such a clause, it must be hidden from other classes. 
+When constructing class objects, some variables must have failure atomicity to 
+account for invalid structures; these can be through exceptions in the constructor, 
+the Final field or an initialized flag and to always keep the exceptions withing scope of the constructor. 
+
+In the event that we fail to account for exceptions or include ineffective exceptions 
+such as a finalize() method which violates rule MET12-J, an attack may take place 
+where an attacker attempts to get a reference to a partially initialized object. 
+With the finalize()example, a constructor may try to throw an exception that should 
+be caught by the garbage collector but won’t arrive because the finalizer must finish 
+first, resulting in the attack obtaining and storing references, maliciously 
+invoke any instance method, and even bypass security checks. 
+*/
+
+public class Foo{
+  private volatile boolean initialized = false; //Checks if the current object had already been 
+  
+  public Foo(){
+    if(!this(performVerification())){ //Calls a verification method
+      return;
+    }
+    this.initialized = true;
+  }
+
+  private Foo(boolean check){
+    //Since this constructor would come with a boolean check, it would
+    //act as a security key, so it should always be verified here
+  }
+
+  //If not with verified key, do actual check
+  private boolean performVerification(){
+    //From here, it is nuanced on how we would verify, but in this scenario, imagine it returns false
+    return false;
+  }
+
+  public void greet(){
+    if(!this.initialized){
+      throw new SecurityException("Invalid");
+    }
+    System.out.println("Hello World");
+  }
+}
