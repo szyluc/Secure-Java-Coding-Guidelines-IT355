@@ -1,1 +1,0 @@
-EXP02-J: Do not use the Object.equals() method to compare two arrays
