@@ -1,0 +1,5 @@
+ERR02J: Prevent exceptions while logging data
+Description:
+While logging is in progress, always make sure to account for exceptions properly through the use of a logger. If exceptions are thrown while logging is being done, the logging may not be correct, and the thrown exceptions can be used to mask further exploits. Data logging should continue to operate correctly even if exceptions are thrown during the process.
+Why is it important:
+Failing to account for exceptions during the logging process leads to security vulnerabilities that attackers may use to further exploit your system. If an exception causes logging to stop working properly, attackers can use those exceptions to bypass more critical security exceptions that would otherwise be logged and thrown. 
