@@ -1,0 +1,5 @@
+ERR08J: Do not catch NullPointerException or any of its ancestors
+Description:
+Programs should not catch NullPointerExceptions. These exceptions thrown during runtime mean that there is a null pointer dereference that needs to be fixed. Catching this exception instead of fixing the relevant issue in the code itself is wrong.
+Why is it important:
+This is important for a variety of reasons. First, adding null checks is a simpler solution than catching NullPointerExceptions. Also, if you have multiple try blocks that can throw these exceptions, it is very difficult to find out which is actually responsible. Finally, your program will more than likely fail to execute properly following this exception being thrown and caught. 
