@@ -1,0 +1,5 @@
+ERR04J: Do not complete abruptly from a finally block
+Description:
+Do not use any statements that cause execution to complete abruptly (like return, break, continue, or throw) within a finally block. Code within the finally block will always execute, so when that code completes abruptly, this causes the segment in the try block to also complete abruptly.
+Why is it important:
+This is important because by completing abruptly in the finally block, thus completing abruptly in the try block, thrown exceptions in the try or catch blocks are suppressed and not properly resolved. 
