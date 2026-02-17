@@ -1,0 +1,5 @@
+MET00J: Validate method arguments
+Description:
+Method arguments should be validated to make sure that they align with the method’s intended design and structure. Invalid arguments can lead to runtime exceptions, incorrect calculations, and other issues. When defensive programming is required, do so for just one side of the caller/callee relationship. 
+Why is it important:
+This is important because an attacker could pass invalid arguments to a method that contains sensitive or important structural data. They may find vulnerabilities in the system from doing so.
