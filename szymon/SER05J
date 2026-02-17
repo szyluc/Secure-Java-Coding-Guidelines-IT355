@@ -1,0 +1,5 @@
+SER05J: Do not serialize instances of inner classes
+Description:
+Do not serialize instances of non-static inner classes. 
+Why is it important:
+Serializing non-static inner classes can lead to unexpected results. Most importantly, serializing these classes instead serializes their associated outer class instance. 
