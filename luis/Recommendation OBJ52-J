@@ -1,0 +1,22 @@
+/*
+A common malicious tactic to attack programs is to cause DoS attacks. In Java, this can be done through overloading 
+the program by bloating the heap to such a degree that the garbage collector cannot compensate on time. While not 
+being the programmer’s fault, there are ways to mitigate these potential attacks by ensuring the code is efficient for 
+the garbage collector’s behalf. This can be done through a multitude of ways, such as ensuring the use of short-lived 
+immutable objects so that younger generations of garbage collection have less intensive proprotional to the number of 
+live objects in that generation; utilize smaller objects when possible; and prevent explicitly calling the garbage 
+collector and allow it to do its job.
+
+By following these practices, you can ensure your garbage collector works efficiently enough to be able to effectively
+relieve the heap without getting bloated by code or unnecessary manual calls (when done incorrectly) ensuring that it 
+can counter malicious events at hindering the program. 
+*/
+Object obj = new Object[100]; // Here is a object of 100 items
+...
+{
+  ...
+  Object temp = obj[curPlace]; // In this example, the temporary object here points to only one item in obj, keeping it small
+  ...
+  // Here, the temp object remains short lived as it stays withing this method and nowhere else, and furthermore, we allow
+  // the garbage collector to do all the work, not calling it voluntarily
+}
