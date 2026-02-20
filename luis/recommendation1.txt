@@ -1,0 +1,10 @@
+/*
+It is in one’s best interest to not try and do the work of the garbage collector by avoiding setting your own pointers to null 
+The garbage collector is plenty good at its job and setting variables to null on its behalf results in more, unnecessary lines of code 
+*/
+
+{
+  int[] buffer = new int[100];
+  doSomething(buffer);
+  //The garbage collector will deal with this. We don't make buffer = null
+}
