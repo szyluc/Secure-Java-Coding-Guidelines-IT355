@@ -1,0 +1,30 @@
+/*
+While overloading can be a useful tool in Java, not being careful in how you pass parameters in methods 
+or constructors can lead to incorrect results in the code potentially incorrectly interpreting the wrong 
+function. The best way to prevent this issue is to be careful on how you pass overloaded functions and, 
+in the case two functions are similar, overgo overloading altogether and just give it a new function name. 
+
+This can ensure transperency not only for the program, but also make things clearer for the programmers by 
+not being flooded with unneeded nuance in interpreting the overloaded functions and make code cleaner. 
+*/
+
+class Foo(){
+  ...
+  // These will make it clear in how the parameters should be passed
+  public static Foo createFoo1 (int i, string s){
+    ...
+  }
+  
+  public static Foo createFoo2 (string s, int i){
+    ...
+  }
+
+  // These prevent confusion to the programmer
+  public Integer getDataByIndex(int i){
+    ...
+  }
+
+  public String getDataByValue(Integer i){
+    ...
+  }
+}
