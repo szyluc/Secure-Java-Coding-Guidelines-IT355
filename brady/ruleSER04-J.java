@@ -1,3 +1,5 @@
+// FILE INPUT/OUTPUT
+
 /* SER04-J. Do not allow serialization and deserialization to bypass the security manager.
    Serialization and deserialization features can be exploited to bypass security manager checks.
    Normally, a serializable class may contain security checks in its constructors for various reasons.
@@ -38,3 +40,4 @@ class UserAccount implements Serializable{
 
     }
    }
+
