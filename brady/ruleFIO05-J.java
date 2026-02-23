@@ -1,3 +1,5 @@
+// BEST USED FOR THE SEARCH FOR BOOKS FEATURE
+
 /* FIO05-J. Do not expose buffers or their backing arrays methods to untrusted code.
    
    Java NIO buffer classes can wrap arrays or create duplicates/slices of existing buffers.
@@ -22,3 +24,4 @@ final class MyClass {
         return CharBuffer.wrap(myArray).asReadOnlyBuffer();
     }
 }
+
