@@ -1,3 +1,5 @@
+// APPLY TO RECEIPT FUNCTION, DON'T RELY ON FINALIZE FOR CLOSING FILE HANDLES
+
 /* MET12-J. Do not use finalizers
    
    Finalizers(finalize() methods) are unreliable and unsafe for cleaning up resources in Java.
@@ -51,3 +53,4 @@ class NewClass implements Closeable{
         }
     }
 }
+
