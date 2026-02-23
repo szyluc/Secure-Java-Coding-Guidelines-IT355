@@ -1,3 +1,5 @@
+// FILE IMPORT/EXPORT
+
 /* SER08-J. Minimize privileges before deserializing from a privileged context.
    
    The vulnerability occurs when a prgram deserializes untrusted input inside a privileged block
@@ -55,4 +57,5 @@ class PluginLoader {
 class PluginConfig implements Serializable {
     //code
 }
+
 
