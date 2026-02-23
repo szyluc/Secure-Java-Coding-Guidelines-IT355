@@ -1,3 +1,5 @@
+// RELEVANT TO THE BOOK OR USER CLASSES, NEEDS FINAL METHODS FOR CLONING
+
 /* MET06-J. Do not invoke overridable methods in clone()
     
    Calling overridable methods from inside the clone() method is insecure because it can allow
@@ -42,3 +44,4 @@ class UserProfile implements Cloneable {
         //initialize default values
     }
 }
+
