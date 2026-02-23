@@ -1,36 +1,25 @@
 
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 public class Account {
     private final UUID accountId;
     private String accountHolderName;
-    private Instant accountHolderBirthDate;
+    private LocalDate accountHolderBirthDate;
     private Role role;
 
-    public Account(String accountHolderName, Instant accountHolderBirthDate, Role role) {
+    public Account(String accountHolderName, LocalDate accountHolderBirthDate, Role role) {
         this.accountId = UUID.randomUUID();
 
-        if (accountHolderName == null) {
-            throw new IllegalArgumentException("Account holder name cannot be null");
-        } else if (accountHolderName.isEmpty()) {
-            throw new IllegalArgumentException("Account holder name cannot be empty");
-        } else {
-            this.accountHolderName = accountHolderName;
-        }
+        validateAccountHolderName(accountHolderName);
+        this.accountHolderName = accountHolderName;
 
-        if (accountHolderBirthDate == null) {
-            throw new IllegalArgumentException("Account holder birth date cannot be null");
-        } else {
-            this.accountHolderBirthDate = accountHolderBirthDate;
-        }
+        validateAccountHolderBirthDate(accountHolderBirthDate);
+        this.accountHolderBirthDate = accountHolderBirthDate;
 
-        if (role == null) {
-            throw new IllegalArgumentException("Role cannot be null");
-        } else {
-            this.role = role;
-        }
+        validateRole(role);
+        this.role = role;
     }
 
     public String getAccountHolderName() {
@@ -38,25 +27,17 @@ public class Account {
     }
 
     public void setAccountHolderName(String accountHolderName) {
-        if (accountHolderName == null) {
-            throw new IllegalArgumentException("Account holder name cannot be null");
-        } else if (accountHolderName.isEmpty()) {
-            throw new IllegalArgumentException("Account holder name cannot be empty");
-        } else {
-            this.accountHolderName = accountHolderName;
-        }
+        validateAccountHolderName(accountHolderName);
+        this.accountHolderName = accountHolderName;
     }
 
-    public Instant getAccountHolderBirthDate() {
+    public LocalDate getAccountHolderBirthDate() {
         return accountHolderBirthDate;
     }
 
-    public void setAccountHolderBirthDate(Instant accountHolderBirthDate) {
-        if (accountHolderBirthDate == null) {
-            throw new IllegalArgumentException("Account holder birth date cannot be null");
-        } else {
-            this.accountHolderBirthDate = accountHolderBirthDate;
-        }
+    public void setAccountHolderBirthDate(LocalDate accountHolderBirthDate) {
+        validateAccountHolderBirthDate(accountHolderBirthDate);
+        this.accountHolderBirthDate = accountHolderBirthDate;
     }
 
     public Role getRole() {
@@ -64,15 +45,30 @@ public class Account {
     }
 
     public void setRole(Role role) {
-        if (role == null) {
-            throw new IllegalArgumentException("Role cannot be null");
-        } else {
-            this.role = role;
-        }
+        validateRole(role);
+        this.role = role;
     }
 
     public UUID getAccountId() {
         return accountId;
+    }
+
+    private void validateAccountHolderName(String accountHolderName) {
+        if (accountHolderName == null || accountHolderName.isEmpty()) {
+            throw new IllegalArgumentException("Account holder name cannot be null or empty");
+        }
+    }
+
+    private void validateAccountHolderBirthDate(LocalDate accountHolderBirthDate) {
+        if (accountHolderBirthDate == null || accountHolderBirthDate.isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("Account holder birth date cannot be null or in the future");
+        }
+    }
+
+    private void validateRole(Role role) {
+        if (role == null) {
+            throw new IllegalArgumentException("Role cannot be null");
+        }
     }
 
 }
