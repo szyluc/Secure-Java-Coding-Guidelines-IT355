@@ -1,5 +1,3 @@
-
-
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -22,8 +20,20 @@ public class Account {
         this.role = role;
     }
 
+    public UUID getAccountId() {
+        return accountId;
+    }
+
     public String getAccountHolderName() {
         return accountHolderName;
+    }
+
+    public LocalDate getAccountHolderBirthDate() {
+        return accountHolderBirthDate;
+    }
+
+    public Role getRole() {
+        return role;
     }
 
     public void setAccountHolderName(String accountHolderName) {
@@ -31,17 +41,9 @@ public class Account {
         this.accountHolderName = accountHolderName;
     }
 
-    public LocalDate getAccountHolderBirthDate() {
-        return accountHolderBirthDate;
-    }
-
     public void setAccountHolderBirthDate(LocalDate accountHolderBirthDate) {
         validateAccountHolderBirthDate(accountHolderBirthDate);
         this.accountHolderBirthDate = accountHolderBirthDate;
-    }
-
-    public Role getRole() {
-        return role;
     }
 
     public void setRole(Role role) {
@@ -49,12 +51,8 @@ public class Account {
         this.role = role;
     }
 
-    public UUID getAccountId() {
-        return accountId;
-    }
-
     private void validateAccountHolderName(String accountHolderName) {
-        if (accountHolderName == null || accountHolderName.isEmpty()) {
+        if (accountHolderName == null || accountHolderName.trim().isEmpty()) {
             throw new IllegalArgumentException("Account holder name cannot be null or empty");
         }
     }
@@ -70,5 +68,4 @@ public class Account {
             throw new IllegalArgumentException("Role cannot be null");
         }
     }
-
 }
