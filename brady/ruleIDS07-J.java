@@ -29,12 +29,15 @@ class DirList {
          System.out.println("Provided file is not a directory");
       } else {
          for (int i = 0; i < directory.list().length; i++) {
-            System.out.println(directory.list()[i]);
+            if(directory.list()[i] != null){
+               System.out.println(directory.list()[i]);
+            }
          } // Just printing out the contents of the directory file, this code is not needed.
       }
    }
    // You can then use this class as your directory reference, and it will only accept directories from the directoryFile
    // This ensures that it will never run Runtime.exec() if it is not needed.
    }
+
 
 
