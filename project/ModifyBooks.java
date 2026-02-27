@@ -22,10 +22,6 @@ public class ModifyBooks extends DatabaseController {
     }
     
 
-    public ModifyBooks(String dbName) {
-        super(dbName);
-    }
-
     /**
      * Allows admin to add a Book based on Book object
      * Gets added to the database
