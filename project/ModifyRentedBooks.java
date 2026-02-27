@@ -26,7 +26,7 @@ public class ModifyRentedBooks extends DatabaseController {
         super("rented_books");
     }
 
-    public void rentBook(Account account, Book book) throws SQLException {
+    public boolean rentBook(Account account, Book book) throws SQLException {
        // Open connection
         openConnection();
 
@@ -46,16 +46,36 @@ public class ModifyRentedBooks extends DatabaseController {
 
         // Close connection
         closeConnection();
+
+        // Return boolean indicating success
+        return true;
     }
 
-    public void returnBook(int accountID, int bookID) throws SQLException {
+    public boolean returnBook(int accountID, int bookID) throws SQLException {
         // Open connection
         openConnection();
 
         // Remove rented book from database
+        String removeAccountString = "DELETE FROM ? WHERE b_id = ? AND a_id = ?";
+        PreparedStatement removeRentedBookFromDB = connection.prepareStatement(removeAccountString);
+        removeRentedBookFromDB.setString(1, RENTED_BOOKS_DB_NAME);
+        removeRentedBookFromDB.setString(3, Integer.toString(bookID));
+        removeRentedBookFromDB.setString(2, Integer.toString(accountID));
+        removeRentedBookFromDB.executeUpdate();
 
         // Close connection
         closeConnection();
+
+        // Return boolean indicating success
+        return true;
+    }
+
+    public boolean viewRentedBooks() throws SQLException {
+        // Open connection
+        openConnection();
+
+        //
+        String viewRentedString = "SELECT * FROM ? WHERE a_id = ?";
     }
     
 }

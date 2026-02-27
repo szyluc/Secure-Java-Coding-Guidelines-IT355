@@ -1,5 +1,5 @@
 import java.util.Scanner;
-
+import java.util.UUID;
 public class InputController {
     /**
      * Options:
@@ -16,7 +16,7 @@ public class InputController {
      * ADMIN:
      * 1) Add book
      * 2) Remove book
-     * 3) View all rented books
+     * 3) View all rented books (view by ID)
      * 4) Search account
      */
 
@@ -60,7 +60,11 @@ public class InputController {
 
     void adminAccountLookUpMenu()
     {
-
+        // need a null check
+        System.out.println("Look up Account ID: ")
+        UUID id = UUID.fromString(scanner.nextLine());
+        ModifyAccounts acc = new ModifyAccounts();
+        acc.getAccount(id); 
     }
 
     void adminAddBookMenu()

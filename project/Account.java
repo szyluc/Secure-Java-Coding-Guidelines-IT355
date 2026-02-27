@@ -20,6 +20,12 @@ public class Account {
         this.accountHolderRole = accountHolderRole;
     }
 
+    public Account(UUID accountId, String accountHolderName, LocalDate accountHolderBirthDate, Role role) {
+        this.accountId = accountId;
+
+        
+    }
+
     public UUID getAccountId() {
         return accountId;
     }

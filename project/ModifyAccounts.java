@@ -59,6 +59,35 @@ public class ModifyAccounts extends DatabaseController {
         String removeAccountString = "DELETE FROM ? WHERE accound_id = ?";
         
         PreparedStatement removeAccountFromDB = connection.prepareStatement(removeAccountString);
-        addAccount
+        removeAccountFromDB.setString(1, ACCOUNT_DB_NAME);
+        removeAccountFromDB.setString(2, accountID.toString());
+        removeAccountFromDB.executeUpdate();
+
+        closeConnection();
+        return true;
+    }
+
+    public Account getAccount(UUID accountID) throws SQLException {
+        // Check that account exists
+        if (accountID == null) {
+            return null; // invalid ID
+        }
+
+        // Open connection
+        openConnection();
+
+        // Get account from database
+        String getAccountString = "SELECT 1 FROM ? WHERE account_id = ?";
+        PreparedStatement getAccountFromDB = connection.prepareStatement(getAccountString);
+        getAccountFromDB.setString(1, ACCOUNT_DB_NAME);
+        getAccountFromDB.setString(2, accountID.toString());
+        Object accountObject = getAccountFromDB.executeQuery().getObject(1);
+        Account account = (Account)accountObject;
+
+        // Close connection
+        closeConnection();
+
+        // Return account object
+        return account;
     }
 }
