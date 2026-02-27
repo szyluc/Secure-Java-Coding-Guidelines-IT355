@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8">
+<books>
+    <book>
+        <title>The Oddyssey</title>
+        <author>Homer</author>
+        <category>Fiction</category>
+    </book>
+    <book>
+        <title>The Outsiders</title>
+        <author>S.E. Hinton</author>
+        <category>Fiction</category>
+    </book>
+    <book>
+        <title>To Kill A Mockingbird</title>
+        <author>Harper Lee</author>
+        <category>Fiction</category>
+    </book>
+    <book>
+        <title>The Giver</title>
+        <author>Lois Lowry</author>
+        <category>Fiction</category>
+    </book>
+    <book>
+        <title>Of Mice and Men</title>
+        <author>John Steinbeck</author>
+        <category>Fiction</category>
+    </book>
+    <book>
+        <title>The Cat in the Hat</title>
+        <author>Dr. Suess</author>
+        <category>Childrens</category>
+    </book>
+    <book>
+        <title>Horton Hears a Who!</title>
+        <author>Homer</author>
+        <category>Childrens</category>
+    </book>
+    <book>
+        <title>The Lorax</title>
+        <author>Dr. Suess</author>
+        <category>Childrens</category>
+    </book>
+    <book>
+        <title>The Hunger Games</title>
+        <author>Suzanne Collins</author>
+        <category>Fiction</category>
+    </book>
+    <book>
+        <title>The Maze Runner</title>
+        <author>James Dashner</author>
+        <category>Fiction</category>
+    </book>
+    <book>
+        <title>Software Security: Building Security In</title>
+        <author>Gary McGraw</author>
+        <category>Non-Fiction</category>
+    </book>
+    <book>
+        <title>Diary of a Wimpy Kid</title>
+        <author>Jeff Kinney</author>
+        <category>Fiction</category>
+    </book>
+    
+</books>
