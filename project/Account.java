@@ -5,7 +5,7 @@ public class Account {
     private final UUID accountId;
     private String accountHolderName;
     private LocalDate accountHolderBirthDate;
-    private Role role;
+    private Role accountHolderRole;
 
     public Account(String accountHolderName, LocalDate accountHolderBirthDate, Role role) {
         this.accountId = UUID.randomUUID();
@@ -16,8 +16,8 @@ public class Account {
         validateAccountHolderBirthDate(accountHolderBirthDate);
         this.accountHolderBirthDate = accountHolderBirthDate;
 
-        validateRole(role);
-        this.role = role;
+        validateAccountHolderRole(accountHolderRole);
+        this.accountHolderRole = accountHolderRole;
     }
 
     public UUID getAccountId() {
@@ -32,8 +32,8 @@ public class Account {
         return accountHolderBirthDate;
     }
 
-    public Role getRole() {
-        return role;
+    public Role getAccountHolderRole() {
+        return accountHolderRole;
     }
 
     public void setAccountHolderName(String accountHolderName) {
@@ -46,9 +46,9 @@ public class Account {
         this.accountHolderBirthDate = accountHolderBirthDate;
     }
 
-    public void setRole(Role role) {
-        validateRole(role);
-        this.role = role;
+    public void setAccountHolderRole(Role accountHolderRole) {
+        validateAccountHolderRole(accountHolderRole);
+        this.accountHolderRole = accountHolderRole;
     }
 
     private void validateAccountHolderName(String accountHolderName) {
@@ -63,8 +63,8 @@ public class Account {
         }
     }
 
-    private void validateRole(Role role) {
-        if (role == null) {
+    private void validateAccountHolderRole(Role accountHolderRole) {
+        if (accountHolderRole == null) {
             throw new IllegalArgumentException("Role cannot be null");
         }
     }

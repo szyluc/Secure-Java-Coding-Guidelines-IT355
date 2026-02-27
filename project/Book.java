@@ -1,6 +1,6 @@
 import java.util.UUID;
 
-class Book {
+public class Book {
     private final UUID bookID;
     private String bookName;
     private String bookAuthor;
@@ -25,4 +25,7 @@ class Book {
         return bookCategory;
     }
 
+    public String getBookId() {
+        return bookID.toString();
+    }
 }
