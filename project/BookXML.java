@@ -14,7 +14,7 @@ class BookXML{
     BookXML(){}
 
     //This is what makes the receipt. This takes a Book object and then takes out the
-    Document MakeReceipt(Book book){
+    void MakeReceipt(Book book){
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document document = builder.newDocument();
