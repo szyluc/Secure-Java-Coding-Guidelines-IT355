@@ -3,6 +3,23 @@ import java.sql.*;
  * Class extends DatabaseController and simplifies the calls.
  */
 public class ModifyBooks extends DatabaseController {
+
+    private static final String BOOK_DB = """
+        CREATE TABLE IF NOT EXISTS book (
+            book_id TEXT PRIMARY KEY,
+            book_name TEXT NOT NULL,
+            book_author TEXT NOT NULL,
+            book_category TEXT NOT NULL
+        );
+        """;
+
+
+    /**
+     * Default constructor for the ModifyBooks class.
+     */
+    public ModifyBooks(String dbName) {
+        super(dbName);
+    }
     
 
     public ModifyBooks(String dbName) {
@@ -28,7 +45,7 @@ public class ModifyBooks extends DatabaseController {
             pstmt.setString(4, b.getBookCategory());
 
             pstmt.executeUpdate();
-            System.out.println("Booke added Successfully");
+            System.out.println("Book added Successfully");
         } catch (SQLException e) {
             System.out.println("Error adding book.");
             e.printStackTrace();
@@ -63,7 +80,7 @@ public class ModifyBooks extends DatabaseController {
             pstmt.setString(3, b.getBookCategory());
             pstmt.setString(4, b.getBookId());
 
-            // Check if the book got updates
+            // Check if the book got updated
             int rows = pstmt.executeUpdate();
 
             if(rows > 0) {
