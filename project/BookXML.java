@@ -28,7 +28,7 @@ class BookXML{
         }
     }
     
-    void MakeReceipt(Book book){
+    void MakeReceipt(Book book, LocalDate nowDate){
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document document = builder.newDocument();
@@ -42,10 +42,9 @@ class BookXML{
         Element author = document.createElement("author");
         author.appendChild(document.createTextNode(book->author));
         Element category = document.createElement("category");
-        category.appendChild(document.createTextNode(book->category)); 
-        LocalDate now = LocalDate.now();
+        category.appendChild(document.createTextNode(book->category));
         Element date = document.createElement("date");
-        date.appendChild(document.createTextNode(now)); 
+        date.appendChild(document.createTextNode(nowDate)); 
         
         book.appendChild(title);
         book.appendChild(author);
