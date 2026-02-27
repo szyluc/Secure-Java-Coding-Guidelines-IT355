@@ -103,5 +103,9 @@ class DatabaseController {
         
     }
 
+    protected Connection getConnection() {
+        return databaseConnection;
+    }
+
     
 }
