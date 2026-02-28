@@ -89,13 +89,5 @@ public class ModifyRentedBooks extends DatabaseController {
         // Return rented book object
         return rentedBook;
     }
-
-    public boolean viewRentedBooks() throws SQLException {
-        // Open connection
-        openConnection();
-
-        //
-        String viewRentedString = "SELECT * FROM ? WHERE a_id = ?";
-    }
     
 }
