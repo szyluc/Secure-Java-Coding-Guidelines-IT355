@@ -53,22 +53,22 @@ public class InputController {
         handleUserMainMenu();
     }
 
-    private void adminMainMenu()
-    {
+    private void adminMainMenu() throws SQLException {
         System.out.println("(1) View Account "); // leads to display of any books currently checked out
         System.out.println("(2) Search for a book"); // leads to separate menu for book search
         System.out.println("(3) Look up another account"); // leads to separate menu for UUID search
         System.out.println("(4) Add a book"); // leads to separate menu for adding book
         System.out.println("(5) Delete a book"); // leads to separate menu for deleting book
         System.out.println("(6) Log Out"); // logs user out
+        handleAdminMainMenu();
     }
 
-    private void searchMenu()
-    {
+    private void searchMenu() throws SQLException{
         System.out.println("Select which filter to search by:");
         System.out.println("(1) Search by book name");
         System.out.println("(2) Search by book author");
         System.out.println("(3) Search by book genre");
+        handleSearchMenu();
     }
 
     private void adminAccountLookUpMenu() throws SQLException
@@ -88,6 +88,24 @@ public class InputController {
     private void adminDeleteBookMenu()
     {
 
+    }
+
+    private void handleSearchMenu() throws SQLException {
+        int choice = scanner.nextInt();
+        switch (choice) {
+            case 1:
+                System.out.println("Enter book name: ");
+                String bookName = scanner.nextLine();
+            case 2:
+                System.out.println("Enter book author: ");
+                String bookAuthor = scanner.nextLine();
+            
+            case 3:
+                System.out.println("Enter book genre: ");
+                String bookGenre = scanner.nextLine();
+
+            default:
+        }
     }
 
     private void handleLogin() throws SQLException {
