@@ -5,11 +5,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-/**
- * TO COMPILE:
- * javac -cp ".;lib/sqlite-jdbc-3.51.2.0.jar" DatabaseController.java
- * java -cp ".;lib/sqlite-jdbc-3.51.2.0.jar" DatabaseController
- */
 public abstract class DatabaseController {
     private String databaseName;
     protected Connection connection;
