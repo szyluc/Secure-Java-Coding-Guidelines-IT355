@@ -134,4 +134,36 @@ public class InputController {
         }
     }
 
+    private void handleAdminMainMenu() throws SQLException {
+        int choice = scanner.nextInt();
+        switch (choice) {
+            case 1:
+                ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
+                ModifyBooks modifyBooks = new ModifyBooks();
+                List<RentedBook> rentedBooks = modifyRentedBooks.getRentedBooks(currentAccount.getAccountId());
+                System.out.println("Rented Books");
+                for (RentedBook rentedBook : rentedBooks) {
+                    Book book = modifyBooks.getBook(rentedBook.getBookID());
+                    System.out.println(book.getBookName());
+                }
+                break;
+            case 2:
+                searchMenu();
+                break;
+            case 3:
+                adminAccountLookUpMenu();
+                break;
+            case 4:
+                adminAddBookMenu();
+                break;
+            case 5:
+                adminDeleteBookMenu();
+                break;
+            case 6:
+                System.exit(0);
+                break;
+            default:
+                System.out.println("Invalid input, please provide an integer between 1 and 6.");
+        }
+    }
 }
