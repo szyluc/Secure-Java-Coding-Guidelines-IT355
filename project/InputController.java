@@ -39,13 +39,21 @@ public class InputController {
     }
 
     public void userMainMenu() throws SQLException {
+        if (currentAccount.getAccountHolderRole() == Role.ADMIN) {
+            adminMainMenu();
+        } else {
+            userMainMenu();
+        }
+    }
+
+    private void memberMainMenu() throws SQLException {
         System.out.println("(1) View Account "); // leads to display of any books currently checked out
         System.out.println("(2) Search for a book"); // leads to separate menu for book search
         System.out.println("(3) Log Out"); // logs user out
         handleUserMainMenu();
     }
 
-    void adminMainMenu()
+    private void adminMainMenu()
     {
         System.out.println("(1) View Account "); // leads to display of any books currently checked out
         System.out.println("(2) Search for a book"); // leads to separate menu for book search
@@ -55,7 +63,7 @@ public class InputController {
         System.out.println("(6) Log Out"); // logs user out
     }
 
-    void searchMenu()
+    private void searchMenu()
     {
         System.out.println("Select which filter to search by:");
         System.out.println("(1) Search by book name");
@@ -63,7 +71,7 @@ public class InputController {
         System.out.println("(3) Search by book genre");
     }
 
-    void adminAccountLookUpMenu() throws SQLException
+    private void adminAccountLookUpMenu() throws SQLException
     {
         // need a null check
         System.out.println("Look up Account ID: ");
@@ -72,12 +80,12 @@ public class InputController {
         acc.getAccount(id); 
     }
 
-    void adminAddBookMenu()
+    private void adminAddBookMenu()
     {
 
     }
 
-    void adminDeleteBookMenu()
+    private void adminDeleteBookMenu()
     {
 
     }
