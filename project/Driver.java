@@ -9,6 +9,7 @@ public class Driver {
         try {
             inputController.startMenu();
 			inputController.loginMenu();
+            inputController.userMainMenu();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

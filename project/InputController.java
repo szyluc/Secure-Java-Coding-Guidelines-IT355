@@ -1,5 +1,6 @@
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
 public class InputController {
@@ -37,11 +38,11 @@ public class InputController {
         handleLogin();
     }
 
-    void userMainMenu()
-    {
+    public void userMainMenu() throws SQLException {
         System.out.println("(1) View Account "); // leads to display of any books currently checked out
         System.out.println("(2) Search for a book"); // leads to separate menu for book search
         System.out.println("(3) Log Out"); // logs user out
+        handleUserMainMenu();
     }
 
     void adminMainMenu()
@@ -102,11 +103,34 @@ public class InputController {
                 currentAccount = newAccount;
                 break;
             case 3:
-                System.out.println("Exiting program. Goodbye!");
                 System.exit(0);
                 break;
             default:
-                System.out.println("Invalid choice. Please try again.");
+                System.out.println("Invalid input, please provide an integer between 1 and 3.");
+        }
+    }
+
+    private void handleUserMainMenu() throws SQLException {
+        int choice = scanner.nextInt();
+        switch (choice) {
+            case 1:
+                ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
+                ModifyBooks modifyBooks = new ModifyBooks();
+                List<RentedBook> rentedBooks = modifyRentedBooks.getRentedBooks(currentAccount.getAccountId());
+                System.out.println("Rented Books");
+                for (RentedBook rentedBook : rentedBooks) {
+                    Book book = modifyBooks.getBook(rentedBook.getBookID());
+                    System.out.println(book.getBookName());
+                }
+                break;
+            case 2:
+                searchMenu();
+                break;
+            case 3:
+                System.exit(0);
+                break;
+            default:
+                System.out.println("Invalid input, please provide an integer between 1 and 3.");
         }
     }
 

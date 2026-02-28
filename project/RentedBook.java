@@ -1,23 +1,26 @@
-public class RentedBook {
-    private String bookID;
-    private String accountID;
-    private String dateRented;
+import java.time.LocalDate;
+import java.util.UUID;
 
-    public RentedBook(String bookID, String accountID, String dateRented) {
+public class RentedBook {
+    private UUID bookID;
+    private UUID accountID;
+    private LocalDate dateRented;
+
+    public RentedBook(UUID bookID, UUID accountID, LocalDate dateRented) {
         this.bookID = bookID;
         this.accountID = accountID;
         this.dateRented = dateRented;
     }
 
-    public String getBookID() {
+    public UUID getBookID() {
         return bookID;
     }
 
-    public String getAccountID() {
+    public UUID getAccountID() {
         return accountID;
     }
 
-    public String getDateRented() {
+    public LocalDate getDateRented() {
         return dateRented;
     }
     
