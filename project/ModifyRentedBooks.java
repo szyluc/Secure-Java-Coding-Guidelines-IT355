@@ -70,6 +70,26 @@ public class ModifyRentedBooks extends DatabaseController {
         return true;
     }
 
+    public RentedBook getRentedBook(int accountID, int bookID) throws SQLException {
+        // Open connection
+        openConnection();
+
+        // Get rented book from database
+        String getRentedBookString = "SELECT 1 FROM ? WHERE b_id = ? AND a_id = ?";
+        PreparedStatement getRentedBookFromDB = connection.prepareStatement(getRentedBookString);
+        getRentedBookFromDB.setString(1, RENTED_BOOKS_DB_NAME);
+        getRentedBookFromDB.setString(2, Integer.toString(bookID));
+        getRentedBookFromDB.setString(3, Integer.toString(accountID));
+        Object rentedBookObject = getRentedBookFromDB.executeQuery().getObject(1);
+        RentedBook rentedBook = (RentedBook)rentedBookObject;
+
+        // Close connection
+        closeConnection();
+
+        // Return rented book object
+        return rentedBook;
+    }
+
     public boolean viewRentedBooks() throws SQLException {
         // Open connection
         openConnection();

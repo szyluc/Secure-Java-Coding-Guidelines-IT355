@@ -1,4 +1,5 @@
 import java.sql.*;
+import java.util.UUID;
 /**
  * Class extends DatabaseController and simplifies the calls.
  */
@@ -12,6 +13,8 @@ public class ModifyBooks extends DatabaseController {
             book_category TEXT NOT NULL
         );
         """;
+
+    private final String BOOK_DB_NAME = "book";
 
 
     /**
@@ -115,6 +118,30 @@ public class ModifyBooks extends DatabaseController {
         } catch(SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public Book getBook(UUID bookID) throws SQLException {
+        // Check that book exists
+        if (bookID == null) {
+            return null; // invalid ID
+        }
+
+        // Open connection
+        openConnection();
+
+        // Get book from database
+        String getBookString = "SELECT 1 FROM ? WHERE book_id =?";
+        PreparedStatement getBookFromDB = connection.prepareStatement(getBookString);
+        getBookFromDB.setString(1, BOOK_DB_NAME);
+        getBookFromDB.setString(2, bookID.toString());
+        Object bookObject = getBookFromDB.executeQuery().getObject(1);
+        Book book = (Book)bookObject;
+
+        // Close connection
+        closeConnection();
+
+        // Return book object
+        return book;
     }
 
 
