@@ -1,4 +1,11 @@
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.PreparedStatement;
+
 import java.util.UUID;
 /**
  * Class extends DatabaseController and simplifies the calls.
@@ -20,8 +27,8 @@ public class ModifyBooks extends DatabaseController {
     /**
      * Default constructor for the ModifyBooks class.
      */
-    public ModifyBooks(String dbName) {
-        super(dbName);
+    public ModifyBooks() {
+        super("book");
     }
     
 
