@@ -1,3 +1,4 @@
+import java.sql.SQLException;
 import java.util.Scanner;
 import java.util.UUID;
 public class InputController {
@@ -58,10 +59,10 @@ public class InputController {
         System.out.println("(3) Search by book genre");
     }
 
-    void adminAccountLookUpMenu()
+    void adminAccountLookUpMenu() throws SQLException
     {
         // need a null check
-        System.out.println("Look up Account ID: ")
+        System.out.println("Look up Account ID: ");
         UUID id = UUID.fromString(scanner.nextLine());
         ModifyAccounts acc = new ModifyAccounts();
         acc.getAccount(id); 
