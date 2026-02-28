@@ -1,12 +1,17 @@
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import java.util.UUID;
+import java.time.*;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 public class ModifyRentedBooks extends DatabaseController {
     private static final String RENTED_BOOKS = """
@@ -20,13 +25,13 @@ public class ModifyRentedBooks extends DatabaseController {
         );
         """;
 
-    private final String RENTED_BOOKS_DB_NAME = "rented_books";
+    private static final String RENTED_BOOKS_DB_NAME = "rented_books";
 
     public ModifyRentedBooks() {
-        super("rented_books");
+        super(RENTED_BOOKS_DB_NAME);
     }
 
-    public boolean rentBook(Account account, Book book) throws SQLException {
+    public boolean rentBook(Account account, Book book) throws Exception {
        // Open connection
         openConnection();
 
@@ -36,6 +41,7 @@ public class ModifyRentedBooks extends DatabaseController {
         createRentedBookDB.close();
 
         // Add rented book to database
+        LocalDate nowDate = LocalDate.now(); // time to be passed to receipt
         String addRentedBookString = "INSERT INTO ? (b_id, a_id, checkout_date) VALUES (?, ?, ?);";
         PreparedStatement addRentedBookToDB = connection.prepareStatement(addRentedBookString);
         addRentedBookToDB.setString(1, RENTED_BOOKS_DB_NAME);
@@ -46,6 +52,9 @@ public class ModifyRentedBooks extends DatabaseController {
 
         // Close connection
         closeConnection();
+
+        // Print receipt
+        makeReceipt(book, nowDate);
 
         // Return boolean indicating success
         return true;
@@ -88,6 +97,43 @@ public class ModifyRentedBooks extends DatabaseController {
 
         // Return rented book object
         return rentedBook;
+    }
+
+    private void makeReceipt(Book curBook, LocalDate nowDate) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document document = builder.newDocument();
+
+        Element root = document.createElement("books");
+        document.appendChild(root);
+
+        Element book = document.createElement("book");
+
+        Element title = document.createElement("title");
+        Element author = document.createElement("author");
+        Element category = document.createElement("category");
+        Element date = document.createElement("date");
+
+        title.appendChild(document.createTextNode(curBook.getBookName()));
+        author.appendChild(document.createTextNode(curBook.getBookAuthor()));
+        category.appendChild(document.createTextNode(curBook.getBookCategory()));
+        date.appendChild(document.createTextNode(nowDate.toString()));
+
+        book.appendChild(title);
+        book.appendChild(author);
+        book.appendChild(category);
+        book.appendChild(date);
+
+        root.appendChild(book);
+
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer transformer = transformerFactory.newTransformer();
+        DOMSource source = new DOMSource(document);
+        StreamResult result = new StreamResult("./receipt.xml");
+        transformer.transform(source, result);
+        
+        // Perhaps we can move this print statement to input controller / driver?
+        System.out.println("Receipt has been sent.");
     }
     
 }

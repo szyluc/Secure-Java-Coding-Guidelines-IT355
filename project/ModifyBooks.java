@@ -1,12 +1,17 @@
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
+import java.io.File;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.PreparedStatement;
 
 import java.util.UUID;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+
+import java.util.ArrayList;
 /**
  * Class extends DatabaseController and simplifies the calls.
  */
@@ -20,15 +25,18 @@ public class ModifyBooks extends DatabaseController {
             book_category TEXT NOT NULL
         );
         """;
-
-    private final String BOOK_DB_NAME = "book";
+    private static final String BOOK_INSERT = """
+            INSERT INTO book (book_id, book_name, book_author, book_category)
+            VALUES (?, ?, ?, ?);
+        """;
+    private static final String BOOK_DB_NAME = "book";
 
 
     /**
      * Default constructor for the ModifyBooks class.
      */
     public ModifyBooks() {
-        super("book");
+        super(BOOK_DB_NAME);
     }
     
 
@@ -38,13 +46,8 @@ public class ModifyBooks extends DatabaseController {
      * @param b
      */
     public void addBook(Book b) {
-        String sql = """
-            INSERT INTO book (book_id, book_name, book_author, book_category)
-            VALUES (?, ?, ?, ?);
-        """;
-
         // Think I haft to fix this try statement
-        try(PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+        try(PreparedStatement pstmt = getConnection().prepareStatement(BOOK_INSERT)) {
             pstmt.setString(1, b.getBookId());
             pstmt.setString(2, b.getBookName());
             pstmt.setString(3, b.getBookAuthor());
@@ -59,12 +62,26 @@ public class ModifyBooks extends DatabaseController {
                 
                 
     }
-    /**
-     * Allows admin to add a book with XML
-     * @param xmlLocation
-     */
-    public void addBook(String xmlLocation) {
 
+    public void importBooks(File xmlFile) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document document = builder.parse(xmlFile);
+
+        NodeList booksNodeList = document.getElementsByTagName("books");
+        ArrayList<Book> booksToAdd = new ArrayList<>();
+        for (int i=0; i<booksNodeList.getLength(); i++) {
+            NodeList bookInfo = document.getElementsByTagName(BOOK_DB_NAME);
+            Book curBook = new Book(
+                bookInfo.item(0).getTextContent(),
+                bookInfo.item(1).getTextContent(),
+                bookInfo.item(2).getTextContent()
+            );
+            booksToAdd.add(curBook);
+            
+            // then, we should add books in bulk to avoid multiple opens and closes
+        }
+        addBooks(booksToAdd);
     }
 
     /**
@@ -149,6 +166,28 @@ public class ModifyBooks extends DatabaseController {
 
         // Return book object
         return book;
+    }
+
+    private boolean addBooks(ArrayList<Book> books) throws SQLException {
+        if (books == null || books.size() == 0) {
+            return false; // cannot add zero books
+        }
+        openConnection();
+        // create book DB if necessary
+        Statement createBookDB = connection.createStatement();
+        createBookDB.executeUpdate(BOOK_DB);
+        createBookDB.close();
+
+        for (Book curBook: books) {
+            PreparedStatement addBookToDB = connection.prepareStatement(BOOK_INSERT);
+            addBookToDB.setString(1, curBook.getBookId());
+            addBookToDB.setString(2, curBook.getBookName());
+            addBookToDB.setString(3, curBook.getBookAuthor());
+            addBookToDB.setString(4, curBook.getBookCategory());
+            addBookToDB.executeUpdate();
+        }
+        closeConnection();
+        return true;
     }
 
 
