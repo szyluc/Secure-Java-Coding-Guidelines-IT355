@@ -1,4 +1,5 @@
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Scanner;
 import java.util.UUID;
 public class InputController {
@@ -22,16 +23,18 @@ public class InputController {
      */
 
     Scanner scanner = new Scanner(System.in);
+    Account currentAccount;
 
-    void runningMenu() {
+    public void startMenu() {
         System.out.println("Welcome to the ISU Library!");
         System.out.println("----------");
     }
     
-    void loginMenu()
-    {
+    public void loginMenu() throws SQLException {
         System.out.println("(1) Log In"); // leads to log in through UUID
         System.out.println("(2) Create Account"); // leads to account creation
+        System.out.println("(3) Exit"); // exits program
+        handleLogin();
     }
 
     void userMainMenu()
@@ -76,6 +79,35 @@ public class InputController {
     void adminDeleteBookMenu()
     {
 
+    }
+
+    private void handleLogin() throws SQLException {
+        ModifyAccounts modifyAccounts = new ModifyAccounts();
+        int choice = scanner.nextInt();
+        switch (choice) {
+            case 1:
+                System.out.println("Enter Account ID: ");
+                UUID id = UUID.fromString(scanner.nextLine());
+                
+                currentAccount = modifyAccounts.getAccount(id);
+                break;
+            case 2:
+                System.out.println("Enter Account Name: ");
+                String name = scanner.nextLine();
+                System.out.println("Enter Account Birth Date (YYYY-MM-DD): ");
+                String birthDate = scanner.nextLine();
+                LocalDate date = LocalDate.parse(birthDate);
+                Account newAccount = new Account(name, date, Role.MEMBER);
+                modifyAccounts.addAccount(newAccount);
+                currentAccount = newAccount;
+                break;
+            case 3:
+                System.out.println("Exiting program. Goodbye!");
+                System.exit(0);
+                break;
+            default:
+                System.out.println("Invalid choice. Please try again.");
+        }
     }
 
 }
