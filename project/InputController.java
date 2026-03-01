@@ -92,18 +92,33 @@ public class InputController {
 
     private void handleSearchMenu() throws SQLException {
         int choice = scanner.nextInt();
+        ModifyBooks modifyBooks = new ModifyBooks();
+        List<Book> books;
         switch (choice) {
             case 1:
                 System.out.println("Enter book name: ");
                 String bookName = scanner.nextLine();
+                books = modifyBooks.getBookByName(bookName);
+                for (Book book : books) {
+                    System.out.println(book.getBookName());
+                }
+                break;
             case 2:
                 System.out.println("Enter book author: ");
                 String bookAuthor = scanner.nextLine();
-            
+                books = modifyBooks.getBookByAuthor(bookAuthor);
+                for (Book book : books) {
+                    System.out.println(book.getBookName());
+                }
+                break;
             case 3:
                 System.out.println("Enter book genre: ");
                 String bookGenre = scanner.nextLine();
-
+                books = modifyBooks.getBookByGenre(bookGenre);
+                for (Book book : books) {
+                    System.out.println(book.getBookName());
+                }
+                break;
             default:
         }
     }
