@@ -42,7 +42,7 @@ public class InputController {
         if (currentAccount.getAccountHolderRole() == Role.ADMIN) {
             adminMainMenu();
         } else {
-            userMainMenu();
+            memberMainMenu();
         }
     }
 
@@ -50,6 +50,7 @@ public class InputController {
         System.out.println("(1) View Account "); // leads to display of any books currently checked out
         System.out.println("(2) Search for a book"); // leads to separate menu for book search
         System.out.println("(3) Log Out"); // logs user out
+        System.out.println("(4) Exit"); // exits program
         handleUserMainMenu();
     }
 
@@ -60,6 +61,7 @@ public class InputController {
         System.out.println("(4) Add a book"); // leads to separate menu for adding book
         System.out.println("(5) Delete a book"); // leads to separate menu for deleting book
         System.out.println("(6) Log Out"); // logs user out
+        System.out.println("(7) Exit"); // exits program
         handleAdminMainMenu();
     }
 
@@ -68,6 +70,7 @@ public class InputController {
         System.out.println("(1) Search by book name");
         System.out.println("(2) Search by book author");
         System.out.println("(3) Search by book genre");
+        System.out.println("(4) Return to main menu");
         handleSearchMenu();
     }
 
@@ -119,8 +122,17 @@ public class InputController {
                     System.out.println(book.getBookName());
                 }
                 break;
+            case 4:
+                Role role = currentAccount.getAccountHolderRole();
+                boolean isAdmin = role == Role.ADMIN;
+                if (isAdmin) {
+                    adminMainMenu();
+                } else {
+                    memberMainMenu();
+                }
+                break;
             default:
-                System.out.println("Invalid input, please provide an integer between 1 and 3.");
+                System.out.println("Invalid input, please provide an integer between 1 and 4.");
         }
     }
 
@@ -169,10 +181,14 @@ public class InputController {
                 searchMenu();
                 break;
             case 3:
+                currentAccount = null;
+                loginMenu();
+                break;
+            case 4:
                 System.exit(0);
                 break;
             default:
-                System.out.println("Invalid input, please provide an integer between 1 and 3.");
+                System.out.println("Invalid input, please provide an integer between 1 and 4.");
         }
     }
 
@@ -202,10 +218,14 @@ public class InputController {
                 adminDeleteBookMenu();
                 break;
             case 6:
+                currentAccount = null;
+                loginMenu();
+                break;
+            case 7:
                 System.exit(0);
                 break;
             default:
-                System.out.println("Invalid input, please provide an integer between 1 and 6.");
+                System.out.println("Invalid input, please provide an integer between 1 and 7.");
         }
     }
 }
