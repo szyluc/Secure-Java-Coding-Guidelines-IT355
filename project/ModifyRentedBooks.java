@@ -12,6 +12,9 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class ModifyRentedBooks extends DatabaseController {
     private static final String RENTED_BOOKS = """
@@ -60,7 +63,7 @@ public class ModifyRentedBooks extends DatabaseController {
         return true;
     }
 
-    public boolean returnBook(int accountID, int bookID) throws SQLException {
+    public boolean returnBook(UUID accountID, UUID bookID) throws SQLException {
         // Open connection
         openConnection();
 
@@ -68,8 +71,8 @@ public class ModifyRentedBooks extends DatabaseController {
         String removeAccountString = "DELETE FROM ? WHERE b_id = ? AND a_id = ?";
         PreparedStatement removeRentedBookFromDB = connection.prepareStatement(removeAccountString);
         removeRentedBookFromDB.setString(1, RENTED_BOOKS_DB_NAME);
-        removeRentedBookFromDB.setString(3, Integer.toString(bookID));
-        removeRentedBookFromDB.setString(2, Integer.toString(accountID));
+        removeRentedBookFromDB.setString(3, bookID.toString());
+        removeRentedBookFromDB.setString(2, accountID.toString());
         removeRentedBookFromDB.executeUpdate();
 
         // Close connection
@@ -79,7 +82,7 @@ public class ModifyRentedBooks extends DatabaseController {
         return true;
     }
 
-    public RentedBook getRentedBook(int accountID, int bookID) throws SQLException {
+    public RentedBook getRentedBook(UUID accountID, UUID bookID) throws SQLException {
         // Open connection
         openConnection();
 
@@ -87,8 +90,8 @@ public class ModifyRentedBooks extends DatabaseController {
         String getRentedBookString = "SELECT 1 FROM ? WHERE b_id = ? AND a_id = ?";
         PreparedStatement getRentedBookFromDB = connection.prepareStatement(getRentedBookString);
         getRentedBookFromDB.setString(1, RENTED_BOOKS_DB_NAME);
-        getRentedBookFromDB.setString(2, Integer.toString(bookID));
-        getRentedBookFromDB.setString(3, Integer.toString(accountID));
+        getRentedBookFromDB.setString(2, bookID.toString());
+        getRentedBookFromDB.setString(3, accountID.toString());
         Object rentedBookObject = getRentedBookFromDB.executeQuery().getObject(1);
         RentedBook rentedBook = (RentedBook)rentedBookObject;
 
@@ -134,6 +137,25 @@ public class ModifyRentedBooks extends DatabaseController {
         
         // Perhaps we can move this print statement to input controller / driver?
         System.out.println("Receipt has been sent.");
+    public List<RentedBook> getRentedBooks(UUID accountID) throws SQLException {
+        // Open connection
+        openConnection();
+
+        // Get rented book from database
+        String getRentedBookString = "SELECT * FROM ? WHERE a_id = ?";
+        PreparedStatement getRentedBookFromDB = connection.prepareStatement(getRentedBookString);
+        getRentedBookFromDB.setString(1, RENTED_BOOKS_DB_NAME);
+        getRentedBookFromDB.setString(2, accountID.toString());
+        List<RentedBook> rentedBooks = new ArrayList<>();
+        ResultSet resultSet = getRentedBookFromDB.executeQuery();
+        while (resultSet.next()) {
+            rentedBooks.add(getRentedBook(accountID, UUID.fromString(resultSet.getString("b_id"))));
+        }
+        // Close connection
+        closeConnection();
+
+        // Return rented book object
+        return rentedBooks;
     }
     
 }
