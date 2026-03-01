@@ -5,7 +5,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.PreparedStatement;
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 /**
  * Class extends DatabaseController and simplifies the calls.
@@ -137,7 +138,7 @@ public class ModifyBooks extends DatabaseController {
         openConnection();
 
         // Get book from database
-        String getBookString = "SELECT 1 FROM ? WHERE book_id =?";
+        String getBookString = "SELECT 1 FROM ? WHERE book_id = ?";
         PreparedStatement getBookFromDB = connection.prepareStatement(getBookString);
         getBookFromDB.setString(1, BOOK_DB_NAME);
         getBookFromDB.setString(2, bookID.toString());
@@ -151,5 +152,69 @@ public class ModifyBooks extends DatabaseController {
         return book;
     }
 
+    public List<Book> getBookByName(String bookName) throws SQLException {
+        // Open connection
+        openConnection();
 
+        // Get book from database
+        String getBookByNameString = "SELECT * FROM ? WHERE book_name = ?";
+        PreparedStatement getBookByNameFromDB = connection.prepareStatement(getBookByNameString);
+        getBookByNameFromDB.setString(1, BOOK_DB_NAME);
+        getBookByNameFromDB.setString(2, bookName);
+        List<Book> books = new ArrayList<>();
+        ResultSet resultSet = getBookByNameFromDB.executeQuery();
+        while (resultSet.next()) {
+            books.add(getBook(UUID.fromString(resultSet.getString("book_id"))));
+        }
+
+        // Close connection
+        closeConnection();
+
+        // Return book object
+        return books;
+    }
+
+    public List<Book> getBookByAuthor(String bookAuthor) throws SQLException {
+        // Open connection
+        openConnection();
+
+        // Get book from database
+        String getBookByAuthorString = "SELECT * FROM ? WHERE book_author = ?";
+        PreparedStatement getBookByAuthorFromDB = connection.prepareStatement(getBookByAuthorString);
+        getBookByAuthorFromDB.setString(1, BOOK_DB_NAME);
+        getBookByAuthorFromDB.setString(2, bookAuthor);
+        List<Book> books = new ArrayList<>();
+        ResultSet resultSet = getBookByAuthorFromDB.executeQuery();
+        while (resultSet.next()) {
+            books.add(getBook(UUID.fromString(resultSet.getString("book_id"))));
+        }
+
+        // Close connection
+        closeConnection();
+
+        // Return book object
+        return books;
+    }
+
+    public List<Book> getBookByGenre(String bookGenre) throws SQLException {
+        // Open connection
+        openConnection();
+
+        // Get book from database
+        String getBookByGenreString = "SELECT * FROM ? WHERE book_category = ?";
+        PreparedStatement getBookByGenreFromDB = connection.prepareStatement(getBookByGenreString);
+        getBookByGenreFromDB.setString(1, BOOK_DB_NAME);
+        getBookByGenreFromDB.setString(2, bookGenre);
+        List<Book> books = new ArrayList<>();
+        ResultSet resultSet = getBookByGenreFromDB.executeQuery();
+        while (resultSet.next()) {
+            books.add(getBook(UUID.fromString(resultSet.getString("book_id"))));
+        }
+
+        // Close connection
+        closeConnection();
+
+        // Return book object
+        return books;
+    }
 }
