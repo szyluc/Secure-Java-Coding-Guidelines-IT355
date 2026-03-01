@@ -79,18 +79,40 @@ public class InputController {
         // need a null check
         System.out.println("Look up Account ID: ");
         UUID id = UUID.fromString(scanner.nextLine());
-        ModifyAccounts acc = new ModifyAccounts();
-        acc.getAccount(id); 
+        ModifyAccounts modifyAccounts = new ModifyAccounts();
+        currentAccount = modifyAccounts.getAccount(id);
+        System.out.println("Account Name: " + currentAccount.getAccountHolderName());
+        System.out.println("Account Birth Date: " + currentAccount.getAccountHolderBirthDate());
     }
 
-    private void adminAddBookMenu()
-    {
-
+    private void adminAddBookMenu() throws SQLException{
+        System.out.println("Enter book name: ");
+        String bookName = scanner.nextLine();
+        System.out.println("Enter book author: ");
+        String bookAuthor = scanner.nextLine();
+        System.out.println("Enter book genre: ");
+        String bookGenre = scanner.nextLine();
+        Book newBook = new Book(bookName, bookAuthor, bookGenre);
+        ModifyBooks modifyBooks = new ModifyBooks();
+        modifyBooks.addBook(newBook);
+        if (currentAccount.getAccountHolderRole() == Role.ADMIN) {
+            adminMainMenu();
+        } else {
+            memberMainMenu();
+        }
     }
 
-    private void adminDeleteBookMenu()
-    {
-
+    private void adminDeleteBookMenu() throws SQLException {
+        System.out.println("Enter book ID: ");
+        UUID bookId = UUID.fromString(scanner.nextLine());
+        ModifyBooks modifyBooks = new ModifyBooks();
+        Book bookToDelete = modifyBooks.getBook(bookId);
+        modifyBooks.deleteBook(bookToDelete);
+        if (currentAccount.getAccountHolderRole() == Role.ADMIN) {
+            adminMainMenu();
+        } else {
+            memberMainMenu();
+        }
     }
 
     private void handleSearchMenu() throws SQLException {
@@ -103,7 +125,10 @@ public class InputController {
                 String bookName = scanner.nextLine();
                 books = modifyBooks.getBookByName(bookName);
                 for (Book book : books) {
-                    System.out.println(book.getBookName());
+                    System.out.println("ID: " + book.getBookId());
+                    System.out.println("Name: " + book.getBookName());
+                    System.out.println("Author: " + book.getBookAuthor());
+                    System.out.println("Genre: " + book.getBookCategory());
                 }
                 break;
             case 2:
@@ -111,7 +136,10 @@ public class InputController {
                 String bookAuthor = scanner.nextLine();
                 books = modifyBooks.getBookByAuthor(bookAuthor);
                 for (Book book : books) {
-                    System.out.println(book.getBookName());
+                    System.out.println("ID: " + book.getBookId());
+                    System.out.println("Name: " + book.getBookName());
+                    System.out.println("Author: " + book.getBookAuthor());
+                    System.out.println("Genre: " + book.getBookCategory());
                 }
                 break;
             case 3:
@@ -119,7 +147,10 @@ public class InputController {
                 String bookGenre = scanner.nextLine();
                 books = modifyBooks.getBookByGenre(bookGenre);
                 for (Book book : books) {
-                    System.out.println(book.getBookName());
+                    System.out.println("ID: " + book.getBookId());
+                    System.out.println("Name: " + book.getBookName());
+                    System.out.println("Author: " + book.getBookAuthor());
+                    System.out.println("Genre: " + book.getBookCategory());
                 }
                 break;
             case 4:
