@@ -40,9 +40,13 @@ public class InputController {
 
     public void userMainMenu() throws SQLException {
         if (currentAccount.getAccountHolderRole() == Role.ADMIN) {
+            while (true) {
             adminMainMenu();
+            }
         } else {
+            while (true) {
             memberMainMenu();
+            }
         }
     }
 
