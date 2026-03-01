@@ -120,6 +120,7 @@ public class InputController {
                 }
                 break;
             default:
+                System.out.println("Invalid input, please provide an integer between 1 and 3.");
         }
     }
 
