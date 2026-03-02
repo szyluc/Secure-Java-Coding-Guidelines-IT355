@@ -7,23 +7,14 @@ public class Account {
     private LocalDate accountHolderBirthDate;
     private Role accountHolderRole;
 
-    public Account(String accountHolderName, LocalDate accountHolderBirthDate, Role role) {
+    public Account(String accountHolderName, LocalDate accountHolderBirthDate, Role accountHolderRole) {
         this.accountId = UUID.randomUUID();
-
-        validateAccountHolderName(accountHolderName);
-        this.accountHolderName = accountHolderName;
-
-        validateAccountHolderBirthDate(accountHolderBirthDate);
-        this.accountHolderBirthDate = accountHolderBirthDate;
-
-        validateAccountHolderRole(accountHolderRole);
-        this.accountHolderRole = accountHolderRole;
+        setAccountDetails(accountHolderName, accountHolderBirthDate, accountHolderRole);
     }
 
-    public Account(UUID accountId, String accountHolderName, LocalDate accountHolderBirthDate, Role role) {
+    public Account(UUID accountId, String accountHolderName, LocalDate accountHolderBirthDate, Role accountHolderRole) {
         this.accountId = accountId;
-
-        
+        setAccountDetails(accountHolderName, accountHolderBirthDate, accountHolderRole);
     }
 
     public UUID getAccountId() {
@@ -73,5 +64,17 @@ public class Account {
         if (accountHolderRole == null) {
             throw new IllegalArgumentException("Role cannot be null");
         }
+    }
+
+    private void setAccountDetails(String accountHolderName, LocalDate accountHolderBirthDate, Role accountHolderRole) {
+        // name
+        validateAccountHolderName(accountHolderName);
+        this.accountHolderName = accountHolderName;
+        // birth date
+        validateAccountHolderBirthDate(accountHolderBirthDate);
+        this.accountHolderBirthDate = accountHolderBirthDate;
+        // role
+        validateAccountHolderRole(accountHolderRole);
+        this.accountHolderRole = accountHolderRole;
     }
 }

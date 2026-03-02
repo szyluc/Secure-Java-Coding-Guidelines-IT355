@@ -34,7 +34,7 @@ public class ModifyAccounts extends DatabaseController {
         createAccountDB.close();
 
         // Then, add an account to the database.
-        String addAccountString = "INSERT INTO ? (account_id, account_name, account_dob, account_role) VALUES (?, ?, ?, ?);";
+        String addAccountString = "INSERT INTO " + ACCOUNT_DB_NAME + " (account_id, account_name, account_dob, account_role) VALUES (?, ?, ?, ?);";
 
         // RULE: Avoid SQL injection.
         PreparedStatement addAccountToDB = connection.prepareStatement(addAccountString);
@@ -55,11 +55,10 @@ public class ModifyAccounts extends DatabaseController {
         }
         openConnection();
         // the table SHOULD exist at this point. if not, an error should be thrown.
-        String removeAccountString = "DELETE FROM ? WHERE accound_id = ?";
+        String removeAccountString = "DELETE FROM " + ACCOUNT_DB_NAME + " WHERE account_id = ?";
         
         PreparedStatement removeAccountFromDB = connection.prepareStatement(removeAccountString);
-        removeAccountFromDB.setString(1, ACCOUNT_DB_NAME);
-        removeAccountFromDB.setString(2, accountID.toString());
+        removeAccountFromDB.setString(1, accountID.toString());
         removeAccountFromDB.executeUpdate();
 
         closeConnection();
@@ -76,10 +75,9 @@ public class ModifyAccounts extends DatabaseController {
         openConnection();
 
         // Get account from database
-        String getAccountString = "SELECT 1 FROM ? WHERE account_id = ?";
+        String getAccountString = "SELECT 1 FROM " + ACCOUNT_DB_NAME + " WHERE account_id = ?";
         PreparedStatement getAccountFromDB = connection.prepareStatement(getAccountString);
-        getAccountFromDB.setString(1, ACCOUNT_DB_NAME);
-        getAccountFromDB.setString(2, accountID.toString());
+        getAccountFromDB.setString(1, accountID.toString());
         Object accountObject = getAccountFromDB.executeQuery().getObject(1);
         Account account = (Account)accountObject;
 

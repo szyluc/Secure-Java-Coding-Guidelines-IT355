@@ -2,6 +2,7 @@ import java.io.File;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -12,7 +13,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
-import java.util.ArrayList;
 /**
  * Class extends DatabaseController and simplifies the calls.
  */
@@ -26,12 +26,11 @@ public class ModifyBooks extends DatabaseController {
             book_category TEXT NOT NULL
         );
         """;
-    private static final String BOOK_INSERT = """
-            INSERT INTO book (book_id, book_name, book_author, book_category)
-            VALUES (?, ?, ?, ?);
-        """;
+
     private static final String BOOK_DB_NAME = "book";
 
+    private static final String BOOK_INSERT = "INSERT INTO " + BOOK_DB_NAME 
+    + "(book_id, book_name, book_author, book_category) VALUES (?, ?, ?, ?);";
 
     /**
      * Default constructor for the ModifyBooks class.
@@ -39,50 +38,55 @@ public class ModifyBooks extends DatabaseController {
     public ModifyBooks() {
         super(BOOK_DB_NAME);
     }
-    
 
     /**
-     * Allows admin to add a Book based on Book object
-     * Gets added to the database
-     * @param b
+     * Allows admin to add a Book to the Book database.
+     * @param book The book object to be added.
+     * @return True: book add was successful. False: book add failed.
+     * @throws SQLException If a SQL exception takes place.
      */
-    public void addBook(Book b) {
-        // Think I haft to fix this try statement
-        try(PreparedStatement pstmt = getConnection().prepareStatement(BOOK_INSERT)) {
-            pstmt.setString(1, b.getBookId());
-            pstmt.setString(2, b.getBookName());
-            pstmt.setString(3, b.getBookAuthor());
-            pstmt.setString(4, b.getBookCategory());
-
-            pstmt.executeUpdate();
-            System.out.println("Book added Successfully");
-        } catch (SQLException e) {
-            System.out.println("Error adding book.");
-            e.printStackTrace();
+    public boolean addBook(Book book) throws SQLException {
+        if (book == null) {
+            return false; // book add failed
         }
-                
-                
+        openConnection();
+        // Create table if necessary.
+        Statement createBookDB = connection.createStatement();
+        createBookDB.executeUpdate(BOOK_DB);
+        createBookDB.close();
+
+        // Then, add a book to the database
+        PreparedStatement addBookToDB = connection.prepareStatement(BOOK_INSERT);
+        addBookToDB.setString(1, book.getBookId().toString());
+        addBookToDB.setString(2, book.getBookName());
+        addBookToDB.setString(3, book.getBookAuthor());
+        addBookToDB.setString(4, book.getBookCategory());
+        addBookToDB.executeUpdate();
+
+        closeConnection(); // Finally, close connection
+        return true;
     }
 
-    public void importBooks(File xmlFile) throws Exception {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document document = builder.parse(xmlFile);
-
-        NodeList booksNodeList = document.getElementsByTagName("books");
-        ArrayList<Book> booksToAdd = new ArrayList<>();
-        for (int i=0; i<booksNodeList.getLength(); i++) {
-            NodeList bookInfo = document.getElementsByTagName(BOOK_DB_NAME);
-            Book curBook = new Book(
-                bookInfo.item(0).getTextContent(),
-                bookInfo.item(1).getTextContent(),
-                bookInfo.item(2).getTextContent()
-            );
-            booksToAdd.add(curBook);
-            
-            // then, we should add books in bulk to avoid multiple opens and closes
+    /**
+     * 
+     * @param bookID
+     * @return
+     * @throws SQLException
+     */
+    public boolean removeBook(UUID bookID) throws SQLException {
+        if (bookID == null) {
+            return false;
         }
-        addBooks(booksToAdd);
+        openConnection();
+        // The table SHOULD exist at this point. If not, an error should be thrown.
+        String removeBookString = "DELETE FROM " + BOOK_DB_NAME + " WHERE book_id = ?";
+
+        PreparedStatement removeBookFromDB = connection.prepareStatement(removeBookString);
+        removeBookFromDB.setString(1, bookID.toString());
+        removeBookFromDB.executeUpdate();
+
+        closeConnection();
+        return true;
     }
 
     /**
@@ -102,7 +106,7 @@ public class ModifyBooks extends DatabaseController {
             pstmt.setString(1, b.getBookName());
             pstmt.setString(2, b.getBookAuthor());
             pstmt.setString(3, b.getBookCategory());
-            pstmt.setString(4, b.getBookId());
+            pstmt.setString(4, b.getBookId().toString());
 
             // Check if the book got updated
             int rows = pstmt.executeUpdate();
@@ -118,31 +122,6 @@ public class ModifyBooks extends DatabaseController {
             }
         
 
-    }
-
-    /**
-     * Deletes  a book from the database
-     * Checks to see if book got deleted
-     * Otherwise throw error 
-     * @param b
-     */
-    public void deleteBook(Book b) {
-        String sql = "DELETE FROM book WHERE book_id = ?;";
-
-        try(PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
-            pstmt.setString(1, b.getBookId());
-
-            // Check if book row got deleted
-            int rows = pstmt.executeUpdate();
-
-            if(rows> 0) {
-                System.out.println("Book deleted Successfully.");
-            } else {
-                System.out.println("Book not found.");
-            } 
-        } catch(SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     public Book getBook(UUID bookID) throws SQLException {
@@ -169,26 +148,25 @@ public class ModifyBooks extends DatabaseController {
         return book;
     }
 
-    private boolean addBooks(ArrayList<Book> books) throws SQLException {
-        if (books == null || books.size() == 0) {
-            return false; // cannot add zero books
-        }
-        openConnection();
-        // create book DB if necessary
-        Statement createBookDB = connection.createStatement();
-        createBookDB.executeUpdate(BOOK_DB);
-        createBookDB.close();
+    public void importBooks(File xmlFile) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document document = builder.parse(xmlFile);
 
-        for (Book curBook: books) {
-            PreparedStatement addBookToDB = connection.prepareStatement(BOOK_INSERT);
-            addBookToDB.setString(1, curBook.getBookId());
-            addBookToDB.setString(2, curBook.getBookName());
-            addBookToDB.setString(3, curBook.getBookAuthor());
-            addBookToDB.setString(4, curBook.getBookCategory());
-            addBookToDB.executeUpdate();
+        NodeList booksNodeList = document.getElementsByTagName("books");
+        ArrayList<Book> booksToAdd = new ArrayList<>();
+        for (int i=0; i<booksNodeList.getLength(); i++) {
+            NodeList bookInfo = document.getElementsByTagName(BOOK_DB_NAME);
+            Book curBook = new Book(
+                bookInfo.item(0).getTextContent(),
+                bookInfo.item(1).getTextContent(),
+                bookInfo.item(2).getTextContent()
+            );
+            booksToAdd.add(curBook);
+            
+            // then, we should add books in bulk to avoid multiple opens and closes
         }
-        closeConnection();
-        return true;
+        addBooks(booksToAdd);
     }
 
     public List<Book> getBookByName(String bookName) throws SQLException {
@@ -196,10 +174,9 @@ public class ModifyBooks extends DatabaseController {
         openConnection();
 
         // Get book from database
-        String getBookByNameString = "SELECT * FROM ? WHERE book_name = ?";
+        String getBookByNameString = "SELECT * FROM " + BOOK_DB_NAME + " WHERE book_name = ?";
         PreparedStatement getBookByNameFromDB = connection.prepareStatement(getBookByNameString);
-        getBookByNameFromDB.setString(1, BOOK_DB_NAME);
-        getBookByNameFromDB.setString(2, bookName);
+        getBookByNameFromDB.setString(1, bookName);
         List<Book> books = new ArrayList<>();
         ResultSet resultSet = getBookByNameFromDB.executeQuery();
         while (resultSet.next()) {
@@ -218,10 +195,9 @@ public class ModifyBooks extends DatabaseController {
         openConnection();
 
         // Get book from database
-        String getBookByAuthorString = "SELECT * FROM ? WHERE book_author = ?";
+        String getBookByAuthorString = "SELECT * FROM " + BOOK_DB_NAME + " WHERE book_author = ?";
         PreparedStatement getBookByAuthorFromDB = connection.prepareStatement(getBookByAuthorString);
-        getBookByAuthorFromDB.setString(1, BOOK_DB_NAME);
-        getBookByAuthorFromDB.setString(2, bookAuthor);
+        getBookByAuthorFromDB.setString(1, bookAuthor);
         List<Book> books = new ArrayList<>();
         ResultSet resultSet = getBookByAuthorFromDB.executeQuery();
         while (resultSet.next()) {
@@ -240,10 +216,9 @@ public class ModifyBooks extends DatabaseController {
         openConnection();
 
         // Get book from database
-        String getBookByGenreString = "SELECT * FROM ? WHERE book_category = ?";
+        String getBookByGenreString = "SELECT * FROM " + BOOK_DB_NAME + " WHERE book_category = ?";
         PreparedStatement getBookByGenreFromDB = connection.prepareStatement(getBookByGenreString);
-        getBookByGenreFromDB.setString(1, BOOK_DB_NAME);
-        getBookByGenreFromDB.setString(2, bookGenre);
+        getBookByGenreFromDB.setString(1, bookGenre);
         List<Book> books = new ArrayList<>();
         ResultSet resultSet = getBookByGenreFromDB.executeQuery();
         while (resultSet.next()) {
@@ -255,5 +230,27 @@ public class ModifyBooks extends DatabaseController {
 
         // Return book object
         return books;
+    }
+
+    private boolean addBooks(ArrayList<Book> books) throws SQLException {
+        if (books == null || books.size() == 0) {
+            return false; // cannot add zero books
+        }
+        openConnection();
+        // create book DB if necessary
+        Statement createBookDB = connection.createStatement();
+        createBookDB.executeUpdate(BOOK_DB);
+        createBookDB.close();
+
+        for (Book curBook: books) {
+            PreparedStatement addBookToDB = connection.prepareStatement(BOOK_INSERT);
+            addBookToDB.setString(1, curBook.getBookId().toString());
+            addBookToDB.setString(2, curBook.getBookName());
+            addBookToDB.setString(3, curBook.getBookAuthor());
+            addBookToDB.setString(4, curBook.getBookCategory());
+            addBookToDB.executeUpdate();
+        }
+        closeConnection();
+        return true;
     }
 }

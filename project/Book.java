@@ -25,7 +25,7 @@ public class Book {
         return bookCategory;
     }
 
-    public String getBookId() {
-        return bookID.toString();
+    public UUID getBookId() {
+        return bookID;
     }
 }
