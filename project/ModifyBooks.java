@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.sql.*;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -37,28 +38,39 @@ public class ModifyBooks extends DatabaseController {
      * Default constructor for the ModifyBooks class.
      */
     public ModifyBooks() {
-        super(BOOK_DB_NAME);
+        super("book");
     }
     
 
     /**
      * Allows admin to add a Book based on Book object
      * Gets added to the database
-     * @param b
+     * @param book
      */
-    public void addBook(Book b) {
-        // Think I haft to fix this try statement
-        try(PreparedStatement pstmt = getConnection().prepareStatement(BOOK_INSERT)) {
-            pstmt.setString(1, b.getBookId());
-            pstmt.setString(2, b.getBookName());
-            pstmt.setString(3, b.getBookAuthor());
-            pstmt.setString(4, b.getBookCategory());
+    public boolean addBook(Book book) {
 
-            pstmt.executeUpdate();
+        if (book == null) {
+            return false;
+        }
+        String addBookSQL = """
+            INSERT INTO book (book_id, book_name, book_author, book_category)
+            VALUES (?, ?, ?, ?);
+        """;
+
+        // Think I haft to fix this try statement
+        try(PreparedStatement addBook = getConnection().prepareStatement(addBookSQL)) {
+            addBook.setString(1, book.getBookId());
+            addBook.setString(2, book.getBookName());
+            addBook.setString(3, book.getBookAuthor());
+            addBook.setString(4, book.getBookCategory());
+
+            addBook.executeUpdate();
             System.out.println("Book added Successfully");
+            return true;
         } catch (SQLException e) {
             System.out.println("Error adding book.");
             e.printStackTrace();
+            return false;
         }
                 
                 
@@ -90,22 +102,22 @@ public class ModifyBooks extends DatabaseController {
      * Checks if book got updated
      * If not throw error
      */
-    public void updateBook(Book b) {
-        String sql = """
+    public void updateBook(Book book) {
+        String updateBookSQL = """
             UPDATE book
             SET book_name = ?, book_author = ?, book_category = ?
             WHERE book_id = ?;
         """;
 
-        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+        try (PreparedStatement updateBook = getConnection().prepareStatement(updateBookSQL)) {
 
-            pstmt.setString(1, b.getBookName());
-            pstmt.setString(2, b.getBookAuthor());
-            pstmt.setString(3, b.getBookCategory());
-            pstmt.setString(4, b.getBookId());
+            updateBook.setString(1, book.getBookName());
+            updateBook.setString(2, book.getBookAuthor());
+            updateBook.setString(3, book.getBookCategory());
+            updateBook.setString(4, book.getBookId());
 
             // Check if the book got updated
-            int rows = pstmt.executeUpdate();
+            int rows = updateBook.executeUpdate();
 
             if(rows > 0) {
                 System.out.println("Book Updated Sucessfully");
@@ -124,16 +136,16 @@ public class ModifyBooks extends DatabaseController {
      * Deletes  a book from the database
      * Checks to see if book got deleted
      * Otherwise throw error 
-     * @param b
+     * @param book book object
      */
-    public void deleteBook(Book b) {
-        String sql = "DELETE FROM book WHERE book_id = ?;";
+    public void deleteBook(Book book) {
+        String deleteBookSQL = "DELETE FROM book WHERE book_id = ?;";
 
-        try(PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
-            pstmt.setString(1, b.getBookId());
+        try(PreparedStatement deleteBook = getConnection().prepareStatement(deleteBookSQL)) {
+            deleteBook.setString(1, book.getBookId());
 
             // Check if book row got deleted
-            int rows = pstmt.executeUpdate();
+            int rows = deleteBook.executeUpdate();
 
             if(rows> 0) {
                 System.out.println("Book deleted Successfully.");
