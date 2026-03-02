@@ -19,7 +19,7 @@ import java.util.UUID;
 
 public class ModifyRentedBooks extends DatabaseController {
     private static final String RENTED_BOOKS = """
-        CREATE TABLE IF NOT EXIST rented_books (
+        CREATE TABLE IF NOT EXISTS rented_books (
             b_id TEXT NOT NULL,
             a_id TEXT NOT NULL,
             checkout_date DATE NOT NULL,

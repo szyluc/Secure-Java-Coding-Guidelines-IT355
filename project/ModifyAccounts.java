@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public class ModifyAccounts extends DatabaseController {
     private final String ACCOUNT_DB = """
-        CREATE TABLE IF NOT EXIST account (
+        CREATE TABLE IF NOT EXISTS account (
             account_id TEXT PRIMARY KEY,
             account_name TEXT NOT NULL,
             account_dob DATE NOT NULL,
