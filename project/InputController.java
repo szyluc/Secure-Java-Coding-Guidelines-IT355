@@ -38,7 +38,7 @@ public class InputController {
         handleLogin();
     }
 
-    public void userMainMenu() throws SQLException {
+    public void userMainMenu() throws SQLException, Exception {
         if (currentAccount.getAccountHolderRole() == Role.ADMIN) {
             while (true) {
             adminMainMenu();
@@ -50,26 +50,28 @@ public class InputController {
         }
     }
 
-    private void memberMainMenu() throws SQLException {
+    private void memberMainMenu() throws SQLException, Exception {
         System.out.println("(1) View Account "); // leads to display of any books currently checked out
         System.out.println("(2) Search for a book"); // leads to separate menu for book search
-        System.out.println("(3) Log Out"); // logs user out
-        System.out.println("(4) Exit"); // exits program
+        System.out.println("(3) Rent a book"); // leads user to menu for renting book
+        System.out.println("(4) Log Out"); // logs user out
+        System.out.println("(5) Exit"); // exits program
         handleUserMainMenu();
     }
 
-    private void adminMainMenu() throws SQLException {
+    private void adminMainMenu() throws SQLException, Exception {
         System.out.println("(1) View Account "); // leads to display of any books currently checked out
         System.out.println("(2) Search for a book"); // leads to separate menu for book search
-        System.out.println("(3) Look up another account"); // leads to separate menu for UUID search
-        System.out.println("(4) Add a book"); // leads to separate menu for adding book
-        System.out.println("(5) Delete a book"); // leads to separate menu for deleting book
-        System.out.println("(6) Log Out"); // logs user out
-        System.out.println("(7) Exit"); // exits program
+        System.out.println("(3) Rent a book"); // leads user to menu for renting book
+        System.out.println("(4) Look up another account"); // leads to separate menu for UUID search
+        System.out.println("(5) Add a book"); // leads to separate menu for adding book
+        System.out.println("(6) Delete a book"); // leads to separate menu for deleting book
+        System.out.println("(7) Log Out"); // logs user out
+        System.out.println("(8) Exit"); // exits program
         handleAdminMainMenu();
     }
 
-    private void searchMenu() throws SQLException{
+    private void searchMenu() throws SQLException, Exception {
         System.out.println("Select which filter to search by:");
         System.out.println("(1) Search by book name");
         System.out.println("(2) Search by book author");
@@ -89,7 +91,7 @@ public class InputController {
         System.out.println("Account Birth Date: " + currentAccount.getAccountHolderBirthDate());
     }
 
-    private void adminAddBookMenu() throws SQLException{
+    private void adminAddBookMenu() throws SQLException, Exception {
         System.out.println("Enter book name: ");
         String bookName = scanner.nextLine();
         System.out.println("Enter book author: ");
@@ -106,7 +108,7 @@ public class InputController {
         }
     }
 
-    private void adminDeleteBookMenu() throws SQLException {
+    private void adminDeleteBookMenu() throws SQLException, Exception {
         System.out.println("Enter book ID: ");
         UUID bookId = UUID.fromString(scanner.nextLine());
         ModifyBooks modifyBooks = new ModifyBooks();
@@ -119,7 +121,7 @@ public class InputController {
         }
     }
 
-    private void handleSearchMenu() throws SQLException {
+    private void handleSearchMenu() throws SQLException, Exception {
         int choice = scanner.nextInt();
         ModifyBooks modifyBooks = new ModifyBooks();
         List<Book> books;
@@ -203,7 +205,7 @@ public class InputController {
         }
     }
 
-    private void handleUserMainMenu() throws SQLException {
+    private void handleUserMainMenu() throws SQLException, Exception {
         int choice = scanner.nextInt();
         switch (choice) {
             case 1:
@@ -220,18 +222,21 @@ public class InputController {
                 searchMenu();
                 break;
             case 3:
+                handleRentBookMenu();
+                break;
+            case 4:
                 currentAccount = null;
                 loginMenu();
                 break;
-            case 4:
+            case 5:
                 System.exit(0);
                 break;
             default:
-                System.out.println("Invalid input, please provide an integer between 1 and 4.");
+                System.out.println("Invalid input, please provide an integer between 1 and 5.");
         }
     }
 
-    private void handleAdminMainMenu() throws SQLException {
+    private void handleAdminMainMenu() throws SQLException, Exception {
         int choice = scanner.nextInt();
         switch (choice) {
             case 1:
@@ -248,23 +253,37 @@ public class InputController {
                 searchMenu();
                 break;
             case 3:
-                adminAccountLookUpMenu();
+                handleRentBookMenu();
                 break;
             case 4:
-                adminAddBookMenu();
+                adminAccountLookUpMenu();
                 break;
             case 5:
-                adminDeleteBookMenu();
+                adminAddBookMenu();
                 break;
             case 6:
+                adminDeleteBookMenu();
+                break;
+            case 7:
                 currentAccount = null;
                 loginMenu();
                 break;
-            case 7:
+            case 8:
                 System.exit(0);
                 break;
             default:
-                System.out.println("Invalid input, please provide an integer between 1 and 7.");
+                System.out.println("Invalid input, please provide an integer between 1 and 8.");
         }
+    }
+
+    private void handleRentBookMenu() throws SQLException, Exception {
+        System.out.println("Enter book ID: ");
+        UUID bookId = UUID.fromString(scanner.nextLine());
+        ModifyBooks modifyBooks = new ModifyBooks();
+        Book book = modifyBooks.getBook(bookId);
+        ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
+        LocalDate rentdate = modifyRentedBooks.rentBook(currentAccount, book);
+        String path = System.getProperty("user.dir");
+        System.out.println("Your receipt has been saved to: " + path + "/receipt.xml");
     }
 }
