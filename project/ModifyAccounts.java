@@ -4,6 +4,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.sql.PreparedStatement;
 
 import java.util.UUID;
@@ -75,12 +76,21 @@ public class ModifyAccounts extends DatabaseController {
         openConnection();
 
         // Get account from database
-        String getAccountString = "SELECT 1 FROM " + ACCOUNT_DB_NAME + " WHERE account_id = ?";
+        String getAccountString = "SELECT account_id, account_name, account_dob, account_role FROM " + ACCOUNT_DB_NAME + " WHERE account_id = ?";
         PreparedStatement getAccountFromDB = connection.prepareStatement(getAccountString);
         getAccountFromDB.setString(1, accountID.toString());
-        Object accountObject = getAccountFromDB.executeQuery().getObject(1);
-        Account account = (Account)accountObject;
 
+        ResultSet rs = getAccountFromDB.executeQuery();
+        Account account = null;
+        // if we found an account
+        if (rs.next()) {
+            account = new Account(
+                UUID.fromString(rs.getString("account_id")),
+                rs.getString("account_name"),
+                LocalDate.parse(rs.getString("account_dob")),
+                Role.valueOf(rs.getString("account_role"))
+            );
+        }
         // Close connection
         closeConnection();
 
