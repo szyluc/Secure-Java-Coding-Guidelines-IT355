@@ -35,7 +35,7 @@ public class ModifyRentedBooks extends DatabaseController {
         super(RENTED_BOOKS_DB_NAME);
     }
 
-    public boolean rentBook(Account account, Book book) throws Exception {
+    public LocalDate rentBook(Account account, Book book) throws Exception {
        // Open connection
         openConnection();
 
@@ -50,7 +50,7 @@ public class ModifyRentedBooks extends DatabaseController {
         PreparedStatement addRentedBookToDB = connection.prepareStatement(addRentedBookString);
         addRentedBookToDB.setString(1, book.getBookId().toString());
         addRentedBookToDB.setString(2, account.getAccountId().toString());
-        addRentedBookToDB.setString(3, java.time.LocalDate.now().toString());
+        addRentedBookToDB.setString(3, nowDate.toString());
         addRentedBookToDB.executeUpdate();
 
         // Close connection
@@ -60,7 +60,7 @@ public class ModifyRentedBooks extends DatabaseController {
         makeReceipt(book, nowDate);
 
         // Return boolean indicating success
-        return true;
+        return nowDate;
     }
 
     public boolean returnBook(UUID accountID, UUID bookID) throws SQLException {
@@ -173,11 +173,8 @@ public class ModifyRentedBooks extends DatabaseController {
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
         DOMSource source = new DOMSource(document);
-        StreamResult result = new StreamResult("./receipt.xml");
+        StreamResult result = new StreamResult(nowDate.toString() + ".xml");
         transformer.transform(source, result);
-        
-        // Perhaps we can move this print statement to input controller / driver?
-        System.out.println("Receipt has been sent.");
     }
     
 }
