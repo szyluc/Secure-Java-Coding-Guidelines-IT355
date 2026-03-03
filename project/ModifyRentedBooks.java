@@ -35,7 +35,7 @@ public class ModifyRentedBooks extends DatabaseController {
         super(RENTED_BOOKS_DB_NAME);
     }
 
-    public boolean rentBook(Account account, Book book) throws Exception {
+    public LocalDate rentBook(Account account, Book book) throws Exception {
        // Open connection
         openConnection();
 
@@ -43,6 +43,9 @@ public class ModifyRentedBooks extends DatabaseController {
         Statement createRentedBookDB = connection.createStatement();
         createRentedBookDB.executeUpdate(RENTED_BOOKS);
         createRentedBookDB.close();
+
+        // Set rental time
+        LocalDate nowDate = LocalDate.now();
 
         // Add rented book to database
         LocalDate nowDate = LocalDate.now(); // time to be passed to receipt
@@ -60,7 +63,7 @@ public class ModifyRentedBooks extends DatabaseController {
         makeReceipt(book, nowDate);
 
         // Return boolean indicating success
-        return true;
+        return nowDate;
     }
 
     public boolean returnBook(UUID accountID, UUID bookID) throws SQLException {
@@ -143,7 +146,7 @@ public class ModifyRentedBooks extends DatabaseController {
         return rentedBooks;
     }
 
-    private LocalDate makeReceipt(Book curBook, LocalDate nowDate) throws Exception {
+    private void makeReceipt(Book curBook, LocalDate nowDate) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document document = builder.newDocument();
@@ -175,8 +178,6 @@ public class ModifyRentedBooks extends DatabaseController {
         DOMSource source = new DOMSource(document);
         StreamResult result = new StreamResult(nowDate.toString() + ".xml");
         transformer.transform(source, result);
-
-        return nowDate;
     }
     
 }
