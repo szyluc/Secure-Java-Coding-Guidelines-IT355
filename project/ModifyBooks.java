@@ -103,13 +103,9 @@ public class ModifyBooks extends DatabaseController {
      * If not throw error
      */
     public void updateBook(Book book) {
-        String updateBookSQL = """
-            UPDATE book
-            SET book_name = ?, book_author = ?, book_category = ?
-            WHERE book_id = ?;
-        """;
+        String updateBookString = "UPDATE " + BOOK_DB_NAME + " SET book_name = ?, book_author = ?, book_category = ? WHERE book_id = ?;";
 
-        try (PreparedStatement updateBook = getConnection().prepareStatement(updateBookSQL)) {
+        try (PreparedStatement updateBook = getConnection().prepareStatement(updateBookString)) {
 
             updateBook.setString(1, book.getBookName());
             updateBook.setString(2, book.getBookAuthor());
@@ -142,10 +138,9 @@ public class ModifyBooks extends DatabaseController {
         openConnection();
 
         // Get book from database
-        String getBookString = "SELECT 1 FROM ? WHERE book_id = ?";
+        String getBookString = "SELECT 1 FROM " + BOOK_DB_NAME + " WHERE book_id = ?";
         PreparedStatement getBookFromDB = connection.prepareStatement(getBookString);
-        getBookFromDB.setString(1, BOOK_DB_NAME);
-        getBookFromDB.setString(2, bookID.toString());
+        getBookFromDB.setString(1, bookID.toString());
         Object bookObject = getBookFromDB.executeQuery().getObject(1);
         Book book = (Book)bookObject;
 
