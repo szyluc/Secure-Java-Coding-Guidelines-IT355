@@ -111,10 +111,10 @@ public class ModifyBooks extends DatabaseController {
 
         try (PreparedStatement updateBook = getConnection().prepareStatement(updateBookSQL)) {
 
-            pstmt.setString(1, b.getBookName());
-            pstmt.setString(2, b.getBookAuthor());
-            pstmt.setString(3, b.getBookCategory());
-            pstmt.setString(4, b.getBookId().toString());
+            updateBook.setString(1, book.getBookName());
+            updateBook.setString(2, book.getBookAuthor());
+            updateBook.setString(3, book.getBookCategory());
+            updateBook.setString(4, book.getBookId().toString());
 
             // Check if the book got updated
             int rows = updateBook.executeUpdate();
