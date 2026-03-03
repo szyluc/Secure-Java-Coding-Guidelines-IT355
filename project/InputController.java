@@ -192,6 +192,8 @@ public class InputController {
                 Account newAccount = new Account(name, date, Role.MEMBER);
                 modifyAccounts.addAccount(newAccount);
                 currentAccount = newAccount;
+                System.out.println("Account ID:" + currentAccount.getAccountId());
+                System.out.println("Store this ID some secure for future logins.");
                 break;
             case 3:
                 System.exit(0);
