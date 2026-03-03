@@ -44,16 +44,13 @@ public class ModifyRentedBooks extends DatabaseController {
         createRentedBookDB.executeUpdate(RENTED_BOOKS);
         createRentedBookDB.close();
 
-        // Set rental time
-        LocalDate nowDate = LocalDate.now();
-
         // Add rented book to database
         LocalDate nowDate = LocalDate.now(); // time to be passed to receipt
         String addRentedBookString = "INSERT INTO " + RENTED_BOOKS_DB_NAME + " (b_id, a_id, checkout_date) VALUES (?, ?, ?);";
         PreparedStatement addRentedBookToDB = connection.prepareStatement(addRentedBookString);
         addRentedBookToDB.setString(1, book.getBookId().toString());
         addRentedBookToDB.setString(2, account.getAccountId().toString());
-        addRentedBookToDB.setString(3, java.time.LocalDate.now().toString());
+        addRentedBookToDB.setString(3, nowDate.toString());
         addRentedBookToDB.executeUpdate();
 
         // Close connection
