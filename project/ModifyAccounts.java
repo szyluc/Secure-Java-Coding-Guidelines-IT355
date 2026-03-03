@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.sql.PreparedStatement;
-
+import java.util.List;
 import java.util.UUID;
 
 public class ModifyAccounts extends DatabaseController {
@@ -54,6 +54,15 @@ public class ModifyAccounts extends DatabaseController {
         if (accountID == null) {
             return false; // invalid ID
         }
+
+        ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
+        List<RentedBook> rentedBooks = modifyRentedBooks.getRentedBooks(accountID);
+        
+        if (!rentedBooks.isEmpty()) {
+            System.out.println("All rented books must be returned before an account can be deleted.");
+            return false;
+        }
+
         openConnection();
         // the table SHOULD exist at this point. if not, an error should be thrown.
         String removeAccountString = "DELETE FROM " + ACCOUNT_DB_NAME + " WHERE account_id = ?";
