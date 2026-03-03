@@ -101,7 +101,7 @@ public class InputController {
         modifyBooks.addBook(newBook);
         if (currentAccount.getAccountHolderRole() == Role.ADMIN) {
             adminMainMenu();
-        } else {
+        } else {    
             memberMainMenu();
         }
     }
@@ -111,7 +111,7 @@ public class InputController {
         UUID bookId = UUID.fromString(scanner.nextLine());
         ModifyBooks modifyBooks = new ModifyBooks();
         Book bookToDelete = modifyBooks.getBook(bookId);
-        modifyBooks.deleteBook(bookToDelete);
+        modifyBooks.removeBook(bookToDelete.getBookId());
         if (currentAccount.getAccountHolderRole() == Role.ADMIN) {
             adminMainMenu();
         } else {
@@ -174,6 +174,8 @@ public class InputController {
     private void handleLogin() throws SQLException {
         ModifyAccounts modifyAccounts = new ModifyAccounts();
         int choice = scanner.nextInt();
+        // We need to consume the "\n" character after reading a number
+        scanner.nextLine();
         switch (choice) {
             case 1:
                 System.out.println("Enter Account ID: ");

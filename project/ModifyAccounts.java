@@ -4,13 +4,14 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.sql.PreparedStatement;
 
 import java.util.UUID;
 
 public class ModifyAccounts extends DatabaseController {
     private final String ACCOUNT_DB = """
-        CREATE TABLE IF NOT EXIST account (
+        CREATE TABLE IF NOT EXISTS account (
             account_id TEXT PRIMARY KEY,
             account_name TEXT NOT NULL,
             account_dob DATE NOT NULL,
@@ -34,7 +35,7 @@ public class ModifyAccounts extends DatabaseController {
         createAccountDB.close();
 
         // Then, add an account to the database.
-        String addAccountString = "INSERT INTO ? (account_id, account_name, account_dob, account_role) VALUES (?, ?, ?, ?);";
+        String addAccountString = "INSERT INTO " + ACCOUNT_DB_NAME + " (account_id, account_name, account_dob, account_role) VALUES (?, ?, ?, ?);";
 
         // RULE: Avoid SQL injection.
         PreparedStatement addAccountToDB = connection.prepareStatement(addAccountString);
@@ -55,11 +56,10 @@ public class ModifyAccounts extends DatabaseController {
         }
         openConnection();
         // the table SHOULD exist at this point. if not, an error should be thrown.
-        String removeAccountString = "DELETE FROM ? WHERE accound_id = ?";
+        String removeAccountString = "DELETE FROM " + ACCOUNT_DB_NAME + " WHERE account_id = ?";
         
         PreparedStatement removeAccountFromDB = connection.prepareStatement(removeAccountString);
-        removeAccountFromDB.setString(1, ACCOUNT_DB_NAME);
-        removeAccountFromDB.setString(2, accountID.toString());
+        removeAccountFromDB.setString(1, accountID.toString());
         removeAccountFromDB.executeUpdate();
 
         closeConnection();
@@ -76,13 +76,21 @@ public class ModifyAccounts extends DatabaseController {
         openConnection();
 
         // Get account from database
-        String getAccountString = "SELECT 1 FROM ? WHERE account_id = ?";
+        String getAccountString = "SELECT account_id, account_name, account_dob, account_role FROM " + ACCOUNT_DB_NAME + " WHERE account_id = ?";
         PreparedStatement getAccountFromDB = connection.prepareStatement(getAccountString);
-        getAccountFromDB.setString(1, ACCOUNT_DB_NAME);
-        getAccountFromDB.setString(2, accountID.toString());
-        Object accountObject = getAccountFromDB.executeQuery().getObject(1);
-        Account account = (Account)accountObject;
+        getAccountFromDB.setString(1, accountID.toString());
 
+        ResultSet rs = getAccountFromDB.executeQuery();
+        Account account = null;
+        // if we found an account
+        if (rs.next()) {
+            account = new Account(
+                UUID.fromString(rs.getString("account_id")),
+                rs.getString("account_name"),
+                LocalDate.parse(rs.getString("account_dob")),
+                Role.valueOf(rs.getString("account_role"))
+            );
+        }
         // Close connection
         closeConnection();
 
