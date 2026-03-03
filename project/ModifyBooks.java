@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.sql.*;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -36,7 +37,7 @@ public class ModifyBooks extends DatabaseController {
      * Default constructor for the ModifyBooks class.
      */
     public ModifyBooks() {
-        super(BOOK_DB_NAME);
+        super("book");
     }
 
     /**
@@ -94,14 +95,14 @@ public class ModifyBooks extends DatabaseController {
      * Checks if book got updated
      * If not throw error
      */
-    public void updateBook(Book b) {
-        String sql = """
+    public void updateBook(Book book) {
+        String updateBookSQL = """
             UPDATE book
             SET book_name = ?, book_author = ?, book_category = ?
             WHERE book_id = ?;
         """;
 
-        try (PreparedStatement pstmt = getConnection().prepareStatement(sql)) {
+        try (PreparedStatement updateBook = getConnection().prepareStatement(updateBookSQL)) {
 
             pstmt.setString(1, b.getBookName());
             pstmt.setString(2, b.getBookAuthor());
@@ -109,7 +110,7 @@ public class ModifyBooks extends DatabaseController {
             pstmt.setString(4, b.getBookId().toString());
 
             // Check if the book got updated
-            int rows = pstmt.executeUpdate();
+            int rows = updateBook.executeUpdate();
 
             if(rows > 0) {
                 System.out.println("Book Updated Sucessfully");
