@@ -1,5 +1,7 @@
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public abstract class DatabaseController {
@@ -29,5 +31,23 @@ public abstract class DatabaseController {
 
     protected Connection getConnection() {
         return connection;
+    }
+
+    public int getRowCount() throws SQLException {
+        // Open connection
+        openConnection();
+
+        // Get row count from database
+        String getRowCountString = "SELECT COUNT(*) FROM " + databaseName;
+        PreparedStatement getRowCountFromDB = connection.prepareStatement(getRowCountString);
+        ResultSet resultSet = getRowCountFromDB.executeQuery();
+        resultSet.next();
+        int rowCount = resultSet.getInt(1);
+
+        // Close connection
+        closeConnection();
+
+        // Return row count
+        return rowCount;
     }
 }
