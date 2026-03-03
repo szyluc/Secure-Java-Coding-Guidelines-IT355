@@ -36,37 +36,4 @@ class BookXML{
             modifyBooks.addBook(new Book(bookInfo.item(0).getTextContent(), bookInfo.item(1).getTextContent(), bookInfo.item(2).getTextContent()));
         }
     }
-    
-    void MakeReceipt(Book currentBook, LocalDate nowDate) throws Exception {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document document = builder.newDocument();
-
-        Element root = document.createElement("books");
-        document.appendChild(root);
-
-        Element book = document.createElement("book");
-        Element title = document.createElement("title");
-        title.appendChild(document.createTextNode(currentBook.getBookName()));
-        Element author = document.createElement("author");
-        author.appendChild(document.createTextNode(currentBook.getBookAuthor()));
-        Element category = document.createElement("category");
-        category.appendChild(document.createTextNode(currentBook.getBookCategory()));
-        Element date = document.createElement("date");
-        date.appendChild(document.createTextNode(nowDate.toString())); 
-        
-        book.appendChild(title);
-        book.appendChild(author);
-        book.appendChild(category);
-        book.appendChild(date);
-
-        root.appendChild(book);
-        
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        Transformer transformer = transformerFactory.newTransformer();
-        DOMSource source = new DOMSource(document);
-        StreamResult result = new StreamResult("./receipt.xml");
-        transformer.transform(source, result);
-        System.out.print("Receipt has been sent.\n");
-    }
 }
