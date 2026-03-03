@@ -100,6 +100,29 @@ public class ModifyRentedBooks extends DatabaseController {
         return rentedBook;
     }
 
+    public boolean isRented(UUID bookID) throws SQLException {
+        // Open connection
+        openConnection();
+
+        // Get rented books from database
+        String getRentedBookString = "SELECT * FROM " + RENTED_BOOKS_DB_NAME + " WHERE b_id = ?";
+        PreparedStatement getRentedBookFromDB = connection.prepareStatement(getRentedBookString);
+        getRentedBookFromDB.setString(1, bookID.toString());
+        ResultSet resultSet = getRentedBookFromDB.executeQuery();
+
+        // Check if book is rented
+        boolean isRented = false;
+        if (resultSet.next()) {
+            isRented = true;
+        }
+
+        // Close connection
+        closeConnection();
+
+        // Return boolean
+        return isRented;
+    }
+
     public List<RentedBook> getRentedBooks(UUID accountID) throws SQLException {
         // Open connection
         openConnection();

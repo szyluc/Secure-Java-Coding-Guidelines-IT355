@@ -78,6 +78,13 @@ public class ModifyBooks extends DatabaseController {
         if (bookID == null) {
             return false;
         }
+
+        ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
+        if (modifyRentedBooks.isRented(bookID)) {
+            System.out.println("All rentals must be returned before a book can be deleted.");
+            return false;
+        }
+
         openConnection();
         // The table SHOULD exist at this point. If not, an error should be thrown.
         String removeBookString = "DELETE FROM " + BOOK_DB_NAME + " WHERE book_id = ?";
