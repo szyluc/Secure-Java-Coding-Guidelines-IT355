@@ -148,7 +148,7 @@ public class ModifyRentedBooks extends DatabaseController {
             if (resultSet.next()) {
                 UUID bookUUID = UUID.fromString(resultSet.getString(1));
                 UUID accountUUID = UUID.fromString(resultSet.getString(2));
-                LocalDate rentDate = LocalDate.parse(resultSet.getString(3));
+                LocalDateTime rentDate = LocalDateTime.parse(resultSet.getString(3));
                 curRentedBook = new RentedBook(bookUUID, accountUUID, rentDate);
             }
 
@@ -217,7 +217,7 @@ public class ModifyRentedBooks extends DatabaseController {
             while (resultSet.next()) {
                 UUID bookUUID = UUID.fromString(resultSet.getString(1));
                 UUID accountUUID = UUID.fromString(resultSet.getString(2));
-                LocalDate rentDate = LocalDate.parse(resultSet.getString(3));
+                LocalDateTime rentDate = LocalDateTime.parse(resultSet.getString(3));
                 RentedBook curRentedBook = new RentedBook(bookUUID, accountUUID, rentDate);
                 rentedBooks.add(curRentedBook);
             }

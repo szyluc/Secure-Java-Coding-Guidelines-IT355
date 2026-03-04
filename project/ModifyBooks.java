@@ -166,7 +166,6 @@ public class ModifyBooks extends DatabaseController {
         }
         String updateBookString = "UPDATE " + BOOK_DB_NAME + " SET book_name = ?, book_author = ?, book_category = ? WHERE book_id = ?;";
 
-        String updateBookString = "UPDATE " + BOOK_DB_NAME + " SET book_name = ?, book_author = ?, book_category = ? WHERE book_id = ?;";
         PreparedStatement updateBook = getConnection().prepareStatement(updateBookString);
 
         try {

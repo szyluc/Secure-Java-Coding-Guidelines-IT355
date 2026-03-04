@@ -12,6 +12,7 @@ import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class InputController {
@@ -309,7 +310,6 @@ public class InputController {
             default:
                 System.out.println("Invalid input, please provide an integer between 1 and 11.");
         }
-        return accountId;
     }
 
     private void handleRentBookMenu() throws SQLException, Exception {
@@ -464,9 +464,10 @@ public class InputController {
             System.out.println("The accounts have rented the same books.");
         } else {
             System.out.println("The accounts have not rented the same books.");
-    public void cleanUp() {
-        scanner.close();
-    private UUID bookNotTakenValidation(ModifyRentedBooks rentedBooks, ModifyBooks books) throws SQLException {
+        }
+    }
+    
+        private UUID bookNotTakenValidation(ModifyRentedBooks rentedBooks, ModifyBooks books) throws SQLException {
         boolean invalidId = true;
         UUID bookId = null;
 
@@ -516,5 +517,24 @@ public class InputController {
                 System.out.println(book.toString());
             }
         }
+    }
+
+    private UUID userLoginValidation(ModifyAccounts accounts) throws SQLException {
+        boolean invalidId = true;
+        UUID accountId = null;
+
+        while (invalidId) {
+            accountId = uuidInputValidation(UUID_INPUT_PROVIDE);
+            if ((accounts.getRowCount("account_id", accountId.toString())) == 0) {
+                System.out.println("This account ID does not exist. Please try again.");
+            } else {
+                invalidId = false;
+            }
+        }
+        return accountId;
+    }
+
+    public void cleanUp() {
+        scanner.close();
     }
 }
