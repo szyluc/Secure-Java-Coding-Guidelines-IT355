@@ -67,7 +67,7 @@ public class InputController {
         int choice = numericInputValidation(3);
         switch (choice) {
             case 1: // LOGIN
-                UUID id = uuidInputValidation(UUID_INPUT_PROVIDE);
+                UUID id = userLoginValidation(modifyAccounts);
                 currentAccount = modifyAccounts.getAccount(id);
                 break;
             case 2: // CREATE ACCOUNT
@@ -300,6 +300,21 @@ public class InputController {
             default:
                 System.out.println("Invalid input, please provide an integer between 1 and 9.");
         }
+    }
+
+    private UUID userLoginValidation(ModifyAccounts accounts) throws SQLException {
+        boolean invalidId = true;
+        UUID accountId = null;
+
+        while (invalidId) {
+            accountId = uuidInputValidation(UUID_INPUT_PROVIDE);
+            if ((accounts.getRowCount("account_id", accountId.toString())) == 0) {
+                System.out.println("This account ID does not exist. Please try again.");
+            } else {
+                invalidId = false;
+            }
+        }
+        return accountId;
     }
 
     private UUID bookNotTakenValidation(ModifyRentedBooks rentedBooks, ModifyBooks books) throws SQLException {
