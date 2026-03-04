@@ -1,3 +1,4 @@
+import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -51,12 +52,12 @@ public class ModifyRentedBooks extends DatabaseController {
         }
     }
 
-    public LocalDate rentBook(Account account, Book book) throws Exception {
+    public LocalDateTime rentBook(Account account, Book book) throws Exception {
        // Open connection
         openConnection();
 
         // Add rented book to database
-        LocalDate nowDate = LocalDate.now(); // time to be passed to receipt
+        LocalDateTime nowDate = LocalDateTime.now(); // time to be passed to receipt
         String addRentedBookString = "INSERT INTO " + RENTED_BOOKS_DB_NAME + " (b_id, a_id, checkout_date) VALUES (?, ?, ?);";
         PreparedStatement addRentedBookToDB = connection.prepareStatement(addRentedBookString);
 
@@ -200,7 +201,7 @@ public class ModifyRentedBooks extends DatabaseController {
         }
     }
 
-    private void makeReceipt(Book curBook, LocalDate nowDate) throws Exception {
+    private void makeReceipt(Book curBook, LocalDateTime nowDate) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document document = builder.newDocument();
@@ -230,6 +231,14 @@ public class ModifyRentedBooks extends DatabaseController {
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
         DOMSource source = new DOMSource(document);
+
+        // first, we should ensure the receipts directory exists. if not, we need to make it
+        File receiptsDir = new File("receipts");
+
+        if (!receiptsDir.exists()) {
+            receiptsDir.mkdirs();
+        }
+
         StreamResult result = new StreamResult("receipts/" + nowDate.toString() + ".xml");
         transformer.transform(source, result);
     }
