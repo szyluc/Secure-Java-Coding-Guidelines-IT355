@@ -107,6 +107,10 @@ public class ModifyBooks extends DatabaseController {
             return false;
         }
 
+        if (getRowCount("book_id", bookID.toString()) == 0) {
+            return false; // book does not exist
+        }
+
         ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
         if (modifyRentedBooks.isRented(bookID)) {
             System.out.println("All rentals must be returned before a book can be deleted.");
@@ -131,6 +135,9 @@ public class ModifyBooks extends DatabaseController {
      * If not throw error
      */
     public void updateBook(Book book) {
+        if(book == null) {
+            throw new IllegalArgumentException("Book cannot be null");
+        }
         String updateBookString = "UPDATE " + BOOK_DB_NAME + " SET book_name = ?, book_author = ?, book_category = ? WHERE book_id = ?;";
 
         try (PreparedStatement updateBook = getConnection().prepareStatement(updateBookString)) {
@@ -184,6 +191,9 @@ public class ModifyBooks extends DatabaseController {
     }
 
     public void importBooks(File xmlFile) throws Exception {
+        if(xmlFile == null || !xmlFile.exists()) {
+            throw new IllegalAccessException("Xml file not found");
+        }
         openConnection();
         PreparedStatement ifBookDBExists = connection.prepareStatement(BOOK_EXISTS);
         ifBookDBExists.setString(1, BOOK_DB_NAME);
@@ -244,6 +254,9 @@ public class ModifyBooks extends DatabaseController {
     }
 
     public List<Book> getBookByName(String bookName) throws SQLException {
+        if(bookName == null || bookName.isEmpty()){
+            throw new IllegalArgumentException();
+        }
         // Open connection
         openConnection();
 
@@ -271,6 +284,10 @@ public class ModifyBooks extends DatabaseController {
     }
 
     public List<Book> getBookByAuthor(String bookAuthor) throws SQLException {
+        
+        if(bookAuthor == null || bookAuthor.isEmpty()){
+            throw new IllegalArgumentException();
+        }
         // Open connection
         openConnection();
 
@@ -299,6 +316,11 @@ public class ModifyBooks extends DatabaseController {
     }
 
     public List<Book> getBookByGenre(String bookGenre) throws SQLException {
+       
+       if(bookGenre == null || bookGenre.isEmpty()){
+            throw new IllegalArgumentException();
+        }
+
         // Open connection
         openConnection();
 

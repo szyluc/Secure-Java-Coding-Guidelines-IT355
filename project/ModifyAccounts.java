@@ -88,6 +88,10 @@ public class ModifyAccounts extends DatabaseController {
             return false; // invalid ID
         }
 
+        if (getRowCount("account_id", accountID.toString()) == 0) {
+            return false; // account does not exist
+        }
+
         ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
         List<RentedBook> rentedBooks = modifyRentedBooks.getRentedBooks(accountID);
         
@@ -141,6 +145,9 @@ public class ModifyAccounts extends DatabaseController {
     }
 
     public void importAdmins(File xmlFile) throws Exception {
+        if(xmlFile == null || !xmlFile.exists()) {
+            throw new IllegalAccessException("File not exits");
+        }
         openConnection();
         PreparedStatement ifAccountDBExists = connection.prepareStatement(ACCOUNT_EXISTS);
         ifAccountDBExists.setString(1, ACCOUNT_DB_NAME);
