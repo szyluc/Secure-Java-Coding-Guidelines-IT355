@@ -1,7 +1,7 @@
 import java.time.LocalDate;
 import java.util.UUID;
 
-public class Account {
+public final class Account {
     private final UUID accountId;
     private String accountHolderName;
     private LocalDate accountHolderBirthDate;
