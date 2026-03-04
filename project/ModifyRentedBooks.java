@@ -1,3 +1,4 @@
+import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -62,7 +63,6 @@ public class ModifyRentedBooks extends DatabaseController {
         // Print receipt
         makeReceipt(book, nowDate);
 
-        // Return boolean indicating success
         return nowDate;
     }
 
@@ -185,6 +185,14 @@ public class ModifyRentedBooks extends DatabaseController {
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
         DOMSource source = new DOMSource(document);
+
+        // first, we should ensure the receipts directory exists. if not, we need to make it
+        File receiptsDir = new File("receipts");
+
+        if (!receiptsDir.exists()) {
+            receiptsDir.mkdirs();
+        }
+
         StreamResult result = new StreamResult("receipts/" + nowDate.toString() + ".xml");
         transformer.transform(source, result);
     }
