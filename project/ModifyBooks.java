@@ -48,15 +48,24 @@ public class ModifyBooks extends DatabaseController {
     public void createBookTable() throws Exception {
         openConnection();
         PreparedStatement ifBookDBExists = connection.prepareStatement(BOOK_EXISTS);
-        ifBookDBExists.setString(1, BOOK_DB_NAME);
-        ResultSet resultSet = ifBookDBExists.executeQuery();
-        if (!resultSet.next()) {
-            // table does not exist yet, we should create it
-            Statement createBookDB = connection.createStatement();
-            createBookDB.executeUpdate(BOOK_DB);
-            createBookDB.close();
+        Statement createBookDB = connection.createStatement();
+
+        try {
+            ifBookDBExists.setString(1, BOOK_DB_NAME);
+            ResultSet resultSet = ifBookDBExists.executeQuery();
+            if (!resultSet.next()) {
+                // table does not exist yet, we should create it
+                createBookDB.executeUpdate(BOOK_DB);
+            }
+        } finally {
+            try {
+                ifBookDBExists.close();
+                createBookDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-        closeConnection();
     }
 
     /**
@@ -69,18 +78,26 @@ public class ModifyBooks extends DatabaseController {
         if (book == null) {
             return false; // book add failed
         }
+
         openConnection();
-
-        // Then, add a book to the database
         PreparedStatement addBookToDB = connection.prepareStatement(BOOK_INSERT);
-        addBookToDB.setString(1, book.getBookId().toString());
-        addBookToDB.setString(2, book.getBookName());
-        addBookToDB.setString(3, book.getBookAuthor());
-        addBookToDB.setString(4, book.getBookCategory());
-        addBookToDB.executeUpdate();
 
-        closeConnection(); // Finally, close connection
-        return true;
+        try {
+            // Then, add a book to the database
+            addBookToDB.setString(1, book.getBookId().toString());
+            addBookToDB.setString(2, book.getBookName());
+            addBookToDB.setString(3, book.getBookAuthor());
+            addBookToDB.setString(4, book.getBookCategory());
+            addBookToDB.executeUpdate();
+            return true;
+        } finally {
+            try {
+                addBookToDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -103,13 +120,20 @@ public class ModifyBooks extends DatabaseController {
         openConnection();
         // The table SHOULD exist at this point. If not, an error should be thrown.
         String removeBookString = "DELETE FROM " + BOOK_DB_NAME + " WHERE book_id = ?";
-
         PreparedStatement removeBookFromDB = connection.prepareStatement(removeBookString);
-        removeBookFromDB.setString(1, bookID.toString());
-        removeBookFromDB.executeUpdate();
 
-        closeConnection();
-        return true;
+        try {
+            removeBookFromDB.setString(1, bookID.toString());
+            removeBookFromDB.executeUpdate();
+            return true;
+        } finally {
+            try {
+                removeBookFromDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -117,11 +141,13 @@ public class ModifyBooks extends DatabaseController {
      * Checks if book got updated
      * If not throw error
      */
-    public void updateBook(Book book) {
+    public void updateBook(Book book) throws SQLException {
+        openConnection();
+
         String updateBookString = "UPDATE " + BOOK_DB_NAME + " SET book_name = ?, book_author = ?, book_category = ? WHERE book_id = ?;";
+        PreparedStatement updateBook = getConnection().prepareStatement(updateBookString);
 
-        try (PreparedStatement updateBook = getConnection().prepareStatement(updateBookString)) {
-
+        try {
             updateBook.setString(1, book.getBookName());
             updateBook.setString(2, book.getBookAuthor());
             updateBook.setString(3, book.getBookCategory());
@@ -134,13 +160,15 @@ public class ModifyBooks extends DatabaseController {
                 System.out.println("Book Updated Sucessfully");
             } else {
                 System.out.println("Book not found.");
-            } 
-        }
-            catch (SQLException e) {
-                e.printStackTrace();;
             }
-        
-
+        } finally {
+            try {
+                updateBook.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public Book getBook(UUID bookID) throws SQLException {
@@ -155,50 +183,64 @@ public class ModifyBooks extends DatabaseController {
         // Get book from database
         String getBookString = "SELECT * FROM " + BOOK_DB_NAME + " WHERE book_id = ?";
         PreparedStatement getBookFromDB = connection.prepareStatement(getBookString);
-        getBookFromDB.setString(1, bookID.toString());
-        ResultSet resultSet = getBookFromDB.executeQuery();
-        Book curBook = null;
-        if (resultSet.next()) {
-            UUID bookUUID = UUID.fromString(resultSet.getString(1));
-            curBook = new Book(bookUUID, resultSet.getString(2), resultSet.getString(3), resultSet.getString(4));
+
+        try {
+            getBookFromDB.setString(1, bookID.toString());
+            ResultSet resultSet = getBookFromDB.executeQuery();
+            Book curBook = null;
+            if (resultSet.next()) {
+                UUID bookUUID = UUID.fromString(resultSet.getString(1));
+                curBook = new Book(bookUUID, resultSet.getString(2), resultSet.getString(3), resultSet.getString(4));
+            }
+            return curBook;
+        } finally {
+            try {
+                getBookFromDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-
-        // Close connection
-        closeConnection();
-
-        // Return book object
-        return curBook;
     }
 
     public void importBooks(File xmlFile) throws Exception {
         openConnection();
         PreparedStatement ifBookDBExists = connection.prepareStatement(BOOK_EXISTS);
-        ifBookDBExists.setString(1, BOOK_DB_NAME);
-        ResultSet resultSet = ifBookDBExists.executeQuery();
-        closeConnection();
-        if (!resultSet.next()) {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document = builder.parse(xmlFile);
+
+        try {
+            ifBookDBExists.setString(1, BOOK_DB_NAME);
+            ResultSet resultSet = ifBookDBExists.executeQuery();
+            if (!resultSet.next()) {
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder builder = factory.newDocumentBuilder();
+                Document document = builder.parse(xmlFile);
 
 
-            ArrayList<Book> booksToAdd = new ArrayList<>();
-            NodeList booksNodeList = document.getElementsByTagName(BOOK_DB_NAME);
-            for (int i=0; i<booksNodeList.getLength(); i++) {
-                // NodeList bookInfo = document.getElementsByTagName(BOOK_DB_NAME);
-                Node curBookNode = booksNodeList.item(i);
-                if (curBookNode.getNodeType() == Node.ELEMENT_NODE) {
-                    Element bookElement = (Element) curBookNode;
-                    Book curBook = new Book(
-                        getTagValue("title", bookElement),
-                        getTagValue("author", bookElement),
-                        getTagValue("category", bookElement)
-                    );
-                    booksToAdd.add(curBook);
+                ArrayList<Book> booksToAdd = new ArrayList<>();
+                NodeList booksNodeList = document.getElementsByTagName(BOOK_DB_NAME);
+                for (int i=0; i<booksNodeList.getLength(); i++) {
+                    // NodeList bookInfo = document.getElementsByTagName(BOOK_DB_NAME);
+                    Node curBookNode = booksNodeList.item(i);
+                    if (curBookNode.getNodeType() == Node.ELEMENT_NODE) {
+                        Element bookElement = (Element) curBookNode;
+                        Book curBook = new Book(
+                            getTagValue("title", bookElement),
+                            getTagValue("author", bookElement),
+                            getTagValue("category", bookElement)
+                        );
+                        booksToAdd.add(curBook);
+                    }
+                    // then, we should add books in bulk to avoid multiple opens and closes
                 }
-                // then, we should add books in bulk to avoid multiple opens and closes
+                addBooks(booksToAdd);
             }
-            addBooks(booksToAdd);
+        } finally {
+            try {
+                ifBookDBExists.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -209,24 +251,31 @@ public class ModifyBooks extends DatabaseController {
         // Get book from database
         String getBookByNameString = "SELECT * FROM " + BOOK_DB_NAME + " WHERE book_name = ?";
         PreparedStatement getBookByNameFromDB = connection.prepareStatement(getBookByNameString);
-        getBookByNameFromDB.setString(1, bookName);
-        List<Book> books = new ArrayList<>();
-        ResultSet resultSet = getBookByNameFromDB.executeQuery();
-        while (resultSet.next()) {
-            Book curBook = new Book(
-                UUID.fromString(resultSet.getString(1)),
-                resultSet.getString(2),
-                resultSet.getString(3),
-                resultSet.getString(4)
-            );
-            books.add(curBook);
+
+        try {
+            getBookByNameFromDB.setString(1, bookName);
+            List<Book> books = new ArrayList<>();
+            ResultSet resultSet = getBookByNameFromDB.executeQuery();
+            while (resultSet.next()) {
+                Book curBook = new Book(
+                    UUID.fromString(resultSet.getString(1)),
+                    resultSet.getString(2),
+                    resultSet.getString(3),
+                    resultSet.getString(4)
+                );
+                books.add(curBook);
+            }
+
+            // Return book object
+            return books;
+        } finally {
+            try {
+                getBookByNameFromDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-
-        // Close connection
-        closeConnection();
-
-        // Return book object
-        return books;
     }
 
     public List<Book> getBookByAuthor(String bookAuthor) throws SQLException {
@@ -236,25 +285,32 @@ public class ModifyBooks extends DatabaseController {
         // Get book from database
         String getBookByAuthorString = "SELECT * FROM " + BOOK_DB_NAME + " WHERE book_author = ?";
         PreparedStatement getBookByAuthorFromDB = connection.prepareStatement(getBookByAuthorString);
-        getBookByAuthorFromDB.setString(1, bookAuthor);
-        List<Book> books = new ArrayList<>();
-        ResultSet resultSet = getBookByAuthorFromDB.executeQuery();
-        
-        while (resultSet.next()) {
-            Book curBook = new Book(
-                UUID.fromString(resultSet.getString(1)),
-                resultSet.getString(2),
-                resultSet.getString(3),
-                resultSet.getString(4)
-            );
-            books.add(curBook);
+
+        try {
+            getBookByAuthorFromDB.setString(1, bookAuthor);
+            List<Book> books = new ArrayList<>();
+            ResultSet resultSet = getBookByAuthorFromDB.executeQuery();
+            
+            while (resultSet.next()) {
+                Book curBook = new Book(
+                    UUID.fromString(resultSet.getString(1)),
+                    resultSet.getString(2),
+                    resultSet.getString(3),
+                    resultSet.getString(4)
+                );
+                books.add(curBook);
+            }
+
+            // Return book object
+            return books;
+        } finally {
+            try {
+                getBookByAuthorFromDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-
-        // Close connection
-        closeConnection();
-
-        // Return book object
-        return books;
     }
 
     public List<Book> getBookByGenre(String bookGenre) throws SQLException {
@@ -264,25 +320,32 @@ public class ModifyBooks extends DatabaseController {
         // Get book from database
         String getBookByGenreString = "SELECT * FROM " + BOOK_DB_NAME + " WHERE book_category = ?";
         PreparedStatement getBookByGenreFromDB = connection.prepareStatement(getBookByGenreString);
-        getBookByGenreFromDB.setString(1, bookGenre);
-        List<Book> books = new ArrayList<>();
-        ResultSet resultSet = getBookByGenreFromDB.executeQuery();
-        
-        while (resultSet.next()) {
-            Book curBook = new Book(
-                UUID.fromString(resultSet.getString(1)),
-                resultSet.getString(2),
-                resultSet.getString(3),
-                resultSet.getString(4)
-            );
-            books.add(curBook);
+
+        try {
+            getBookByGenreFromDB.setString(1, bookGenre);
+            List<Book> books = new ArrayList<>();
+            ResultSet resultSet = getBookByGenreFromDB.executeQuery();
+            
+            while (resultSet.next()) {
+                Book curBook = new Book(
+                    UUID.fromString(resultSet.getString(1)),
+                    resultSet.getString(2),
+                    resultSet.getString(3),
+                    resultSet.getString(4)
+                );
+                books.add(curBook);
+            }
+
+            // Return book object
+            return books;
+        } finally {
+            try {
+                getBookByGenreFromDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-
-        // Close connection
-        closeConnection();
-
-        // Return book object
-        return books;
     }
 
     private boolean addBooks(ArrayList<Book> books) throws SQLException {
@@ -292,18 +355,26 @@ public class ModifyBooks extends DatabaseController {
         openConnection();
         // create book DB if necessary
         Statement createBookDB = connection.createStatement();
-        createBookDB.executeUpdate(BOOK_DB);
-        createBookDB.close();
 
-        for (Book curBook: books) {
-            PreparedStatement addBookToDB = connection.prepareStatement(BOOK_INSERT);
-            addBookToDB.setString(1, curBook.getBookId().toString());
-            addBookToDB.setString(2, curBook.getBookName());
-            addBookToDB.setString(3, curBook.getBookAuthor());
-            addBookToDB.setString(4, curBook.getBookCategory());
-            addBookToDB.executeUpdate();
+        try {
+            createBookDB.executeUpdate(BOOK_DB);
+
+            for (Book curBook: books) {
+                PreparedStatement addBookToDB = connection.prepareStatement(BOOK_INSERT);
+                addBookToDB.setString(1, curBook.getBookId().toString());
+                addBookToDB.setString(2, curBook.getBookName());
+                addBookToDB.setString(3, curBook.getBookAuthor());
+                addBookToDB.setString(4, curBook.getBookCategory());
+                addBookToDB.executeUpdate();
+            }
+            return true;
+        } finally {
+            try {
+                createBookDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-        closeConnection();
-        return true;
     }
 }
