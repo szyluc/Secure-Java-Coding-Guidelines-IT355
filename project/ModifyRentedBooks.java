@@ -53,6 +53,13 @@ public class ModifyRentedBooks extends DatabaseController {
     }
 
     public LocalDateTime rentBook(Account account, Book book) throws Exception {
+       if(account == null) {
+        throw new IllegalArgumentException();
+       }
+       if(book == null) {
+        throw new IllegalArgumentException();
+       }
+
        // Open connection
         openConnection();
 
@@ -83,6 +90,16 @@ public class ModifyRentedBooks extends DatabaseController {
     }
 
     public boolean returnBook(UUID accountID, UUID bookID) throws SQLException {
+        if(accountID == null) {
+            throw new IllegalArgumentException();
+        }
+
+        if(bookID == null) {
+            throw new IllegalArgumentException();
+        }
+
+
+        
         // Open connection
         openConnection();
 
@@ -108,6 +125,14 @@ public class ModifyRentedBooks extends DatabaseController {
     }
 
     public RentedBook getRentedBook(UUID accountID, UUID bookID) throws SQLException {
+        
+        if(accountID == null) {
+            throw new IllegalArgumentException();
+        }
+
+        if(bookID == null) {
+            throw new IllegalArgumentException();
+        }
         // Open connection
         openConnection();
 
@@ -140,6 +165,10 @@ public class ModifyRentedBooks extends DatabaseController {
     }
 
     public boolean isRented(UUID bookID) throws SQLException {
+
+        if(bookID == null) {
+            throw new IllegalArgumentException();
+        }
         // Open connection
         openConnection();
 
@@ -170,6 +199,10 @@ public class ModifyRentedBooks extends DatabaseController {
     }
 
     public List<RentedBook> getRentedBooks(UUID accountID) throws SQLException {
+       
+        if(accountID == null) {
+            throw new IllegalArgumentException();
+        }
         // Open connection
         openConnection();
 
