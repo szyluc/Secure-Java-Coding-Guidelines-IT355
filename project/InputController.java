@@ -369,4 +369,8 @@ public class InputController {
             e.printStackTrace();
         }
     }
+
+    public void cleanUp() {
+        scanner.close();
+    }
 }

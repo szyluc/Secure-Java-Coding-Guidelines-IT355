@@ -18,6 +18,12 @@ public class Driver {
 			sqlE.printStackTrace();
 		} catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                inputController.cleanUp();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }
