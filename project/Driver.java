@@ -12,9 +12,6 @@ public class Driver {
             return;
         }
 
-        
-
-
         InputController inputController = new InputController();
         ModifyBooks books = new ModifyBooks();
         ModifyAccounts accounts = new ModifyAccounts();
@@ -36,9 +33,9 @@ public class Driver {
                     books.importBooks(booksXML); // import pre-specified books
                     accounts.importAdmins(adminsXML); // import pre-specified admins
                 } catch (SQLException sqlE) {
-                    sqlE.printStackTrace();
+                    System.out.println("SQLException caught.");
                 } catch(Exception e) {
-                    e.printStackTrace();
+                    System.out.println("Exception caught.");
                 }
             }
         });
@@ -51,14 +48,14 @@ public class Driver {
             inputController.loginMenu();
             inputController.userMainMenu();
         } catch (SQLException sqlE) {
-            sqlE.printStackTrace();
+            System.out.println("SQLException caught.");
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Exception caught.");
         } finally {
             try {
                 inputController.cleanUp();
             } catch (Exception e) {
-                e.printStackTrace();
+                System.out.println("Exception caught.");
             }
         }
         

@@ -28,6 +28,8 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.w3c.dom.Element;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class extends DatabaseController and simplifies the calls.
@@ -75,7 +77,7 @@ public class ModifyBooks extends DatabaseController {
                 createBookDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -107,7 +109,7 @@ public class ModifyBooks extends DatabaseController {
                 addBookToDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -147,7 +149,7 @@ public class ModifyBooks extends DatabaseController {
                 removeBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -187,7 +189,7 @@ public class ModifyBooks extends DatabaseController {
                 updateBook.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -219,7 +221,7 @@ public class ModifyBooks extends DatabaseController {
                 getBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -244,11 +246,9 @@ public class ModifyBooks extends DatabaseController {
                     public void warning(SAXParseException e) throws SAXException {
                         throw e;
                     }
-
                     public void error(SAXParseException e) throws SAXException {
                         throw e;
                     }
-
                     public void fatalError(SAXParseException e) throws SAXException {
                         throw e;
                     }
@@ -306,7 +306,7 @@ public class ModifyBooks extends DatabaseController {
                 ifBookDBExists.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -342,7 +342,7 @@ public class ModifyBooks extends DatabaseController {
                 getBookByNameFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -380,7 +380,7 @@ public class ModifyBooks extends DatabaseController {
                 getBookByAuthorFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -419,7 +419,7 @@ public class ModifyBooks extends DatabaseController {
                 getBookByGenreFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -449,7 +449,7 @@ public class ModifyBooks extends DatabaseController {
                 createBookDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }

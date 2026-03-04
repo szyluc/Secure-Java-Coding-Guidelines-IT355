@@ -14,6 +14,12 @@ import java.io.FileWriter;
  * file as well console before terminating.
  */
 public class WriteLoop {
+    /**
+     * The main method of the program which simply just loops 
+     * and logs the status of its loop with a proper shutdown 
+     * hook to handle abrupt closures.
+     * @param args the arguments passed to the program
+     */
     public static void main(String[] args) {
         File outFile = new File ("Output.txt");
         FileWriter writer;
@@ -27,7 +33,7 @@ public class WriteLoop {
                         writer.write("Looping Stopped\n");
                         writer.close();
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        System.out.println("Exception caught");
                     }
                 }
             }));
@@ -44,7 +50,7 @@ public class WriteLoop {
             }
             Runtime.getRuntime().exit(1);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Exception caught.");
         }
     }
 

@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.UUID;
 
 import java.io.Closeable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 // MET12-J: Implements Closeable so the caller can explicitly release
 // resources with close() rather than a finalizer.
@@ -52,7 +54,7 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
                 createRentedBookDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -89,7 +91,7 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
                 addRentedBookToDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -124,7 +126,7 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
                 removeRentedBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -153,7 +155,7 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
             if (resultSet.next()) {
                 UUID bookUUID = UUID.fromString(resultSet.getString(1));
                 UUID accountUUID = UUID.fromString(resultSet.getString(2));
-                LocalDate rentDate = LocalDate.parse(resultSet.getString(3));
+                LocalDateTime rentDate = LocalDateTime.parse(resultSet.getString(3));
                 curRentedBook = new RentedBook(bookUUID, accountUUID, rentDate);
             }
 
@@ -164,7 +166,7 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
                 getRentedBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -198,7 +200,7 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
                 getRentedBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -222,7 +224,7 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
             while (resultSet.next()) {
                 UUID bookUUID = UUID.fromString(resultSet.getString(1));
                 UUID accountUUID = UUID.fromString(resultSet.getString(2));
-                LocalDate rentDate = LocalDate.parse(resultSet.getString(3));
+                LocalDateTime rentDate = LocalDateTime.parse(resultSet.getString(3));
                 RentedBook curRentedBook = new RentedBook(bookUUID, accountUUID, rentDate);
                 rentedBooks.add(curRentedBook);
             }
@@ -234,7 +236,7 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
                 getRentedBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -289,7 +291,7 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
             try {
                 closeConnection();
             } catch (Exception e) {
-                e.printStackTrace();
+                System.out.println("Exception caught.");
             }
         }
     }
