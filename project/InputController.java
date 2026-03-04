@@ -3,6 +3,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
@@ -331,9 +332,9 @@ public class InputController {
         UUID bookId = UUID.fromString(scanner.nextLine());
         ModifyBooks modifyBooks = new ModifyBooks();
         Book book = modifyBooks.getBook(bookId);
-        LocalDate rentdate = modifyRentedBooks.rentBook(currentAccount, book);
+        LocalDateTime rentdate = modifyRentedBooks.rentBook(currentAccount, book);
         String path = System.getProperty("user.dir");
-        System.out.println("Your receipt has been saved to: " + path + "/receipt.xml");
+        System.out.println("Your receipt has been saved to: " + path + "/" + rentdate.toString() + ".xml");
     }
 
     private void handleReturnBookMenu() throws SQLException, Exception {

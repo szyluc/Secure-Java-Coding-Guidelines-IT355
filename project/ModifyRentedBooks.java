@@ -43,12 +43,12 @@ public class ModifyRentedBooks extends DatabaseController {
         closeConnection();
     }
 
-    public LocalDate rentBook(Account account, Book book) throws Exception {
+    public LocalDateTime rentBook(Account account, Book book) throws Exception {
        // Open connection
         openConnection();
 
         // Add rented book to database
-        LocalDate nowDate = LocalDate.now(); // time to be passed to receipt
+        LocalDateTime nowDate = LocalDateTime.now(); // time to be passed to receipt
         String addRentedBookString = "INSERT INTO " + RENTED_BOOKS_DB_NAME + " (b_id, a_id, checkout_date) VALUES (?, ?, ?);";
         PreparedStatement addRentedBookToDB = connection.prepareStatement(addRentedBookString);
         addRentedBookToDB.setString(1, book.getBookId().toString());
@@ -155,7 +155,7 @@ public class ModifyRentedBooks extends DatabaseController {
         return rentedBooks;
     }
 
-    private void makeReceipt(Book curBook, LocalDate nowDate) throws Exception {
+    private void makeReceipt(Book curBook, LocalDateTime nowDate) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document document = builder.newDocument();
