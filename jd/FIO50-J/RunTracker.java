@@ -17,6 +17,12 @@ import java.nio.file.StandardOpenOption;
  * method fails because the file already exists.
  */
 public class RunTracker {
+    /**
+     * The main method of the program which handles the proper 
+     * creation of a file and will use that file to track whether
+     * or not the program has been run before.
+     * @param args the arguments passed to the program
+     */
     public static void main(String[] args) {
         BufferedOutputStream outputStream;
         try {
