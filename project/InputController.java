@@ -5,12 +5,14 @@ import java.sql.SQLException;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class InputController {
@@ -119,11 +121,12 @@ public class InputController {
         System.out.println("(3) Rent a book"); // leads user to menu for renting book
         System.out.println("(4) Return a book"); // leads user to menu for returning book
         System.out.println("(5) Look up another account"); // leads to separate menu for UUID search
-        System.out.println("(6) Add a book"); // leads to separate menu for adding book
-        System.out.println("(7) Delete a book"); // leads to separate menu for deleting book
-        System.out.println("(8) Help"); // displays helps information to user
-        System.out.println("(9) Logout"); // logs user out
-        System.out.println("(10) Exit"); // exits program
+        System.out.println("(6) Compare accounts"); // leads to seperate menu for comparing accounts
+        System.out.println("(7) Add a book"); // leads to separate menu for adding book
+        System.out.println("(8) Delete a book"); // leads to separate menu for deleting book
+        System.out.println("(9) Help"); // displays helps information to user
+        System.out.println("(10) Logout"); // logs user out
+        System.out.println("(11) Exit"); // exits program
         System.out.println(INPUT_LINES);
         handleAdminMainMenu();
     }
@@ -286,39 +289,27 @@ public class InputController {
                 userMainMenu();
                 break;
             case 6:
-                adminAddBookMenu();
+                compareAccountsMenu();
                 userMainMenu();
                 break;
             case 7:
-                adminDeleteBookMenu();
+                adminAddBookMenu();
                 userMainMenu();
                 break;
             case 8:
+                adminDeleteBookMenu();
+                break;
+            case 9:
                 readHelpInfo("./docs/adminMenuHelp.txt");
                 userMainMenu();
                 break;
-            case 9:
+            case 10:
                 currentAccount = null;
                 loginMenu();
                 break;
-            case 10:
+            case 11:
                 return;
         }
-    }
-
-    private UUID userLoginValidation(ModifyAccounts accounts) throws SQLException {
-        boolean invalidId = true;
-        UUID accountId = null;
-
-        while (invalidId) {
-            accountId = uuidInputValidation(UUID_INPUT_PROVIDE);
-            if ((accounts.getRowCount("account_id", accountId.toString())) == 0) {
-                System.out.println("This account ID does not exist. Please try again.");
-            } else {
-                invalidId = false;
-            }
-        }
-        return accountId;
     }
 
     private void handleRentBookMenu() throws SQLException, Exception {
@@ -461,9 +452,22 @@ public class InputController {
         }
     }
 
-    public void cleanUp() {
-        scanner.close();
-    private UUID bookNotTakenValidation(ModifyRentedBooks rentedBooks, ModifyBooks books) throws SQLException {
+    private void compareAccountsMenu() throws SQLException{
+        System.out.println("Enter first account ID: ");
+        UUID id1 = UUID.fromString(scanner.nextLine());
+        System.out.println("Enter second account ID: ");
+        UUID id2 = UUID.fromString(scanner.nextLine());
+        ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
+        RentedBook[] account1Books = modifyRentedBooks.getRentedBooks(id1).toArray(new RentedBook[0]);
+        RentedBook[] account2Books = modifyRentedBooks.getRentedBooks(id2).toArray(new RentedBook[0]);
+        if (Arrays.equals(account1Books, account2Books)) {
+            System.out.println("The accounts have rented the same books.");
+        } else {
+            System.out.println("The accounts have not rented the same books.");
+        }
+    }
+    
+        private UUID bookNotTakenValidation(ModifyRentedBooks rentedBooks, ModifyBooks books) throws SQLException {
         boolean invalidId = true;
         UUID bookId = null;
 
@@ -513,5 +517,24 @@ public class InputController {
                 System.out.println(book.toString());
             }
         }
+    }
+
+    private UUID userLoginValidation(ModifyAccounts accounts) throws SQLException {
+        boolean invalidId = true;
+        UUID accountId = null;
+
+        while (invalidId) {
+            accountId = uuidInputValidation(UUID_INPUT_PROVIDE);
+            if ((accounts.getRowCount("account_id", accountId.toString())) == 0) {
+                System.out.println("This account ID does not exist. Please try again.");
+            } else {
+                invalidId = false;
+            }
+        }
+        return accountId;
+    }
+
+    public void cleanUp() {
+        scanner.close();
     }
 }
