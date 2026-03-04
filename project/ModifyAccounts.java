@@ -56,9 +56,16 @@ public class ModifyAccounts extends DatabaseController {
     public void createAccountTable() throws Exception {
         openConnection();
         Statement createAccountDB = connection.createStatement();
-        createAccountDB.executeUpdate(ACCOUNT_DB);
-        createAccountDB.close();
-        closeConnection();
+        try {
+            createAccountDB.executeUpdate(ACCOUNT_DB);
+        } finally {
+            try {
+                createAccountDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public boolean addAccount(Account account) throws SQLException {
@@ -66,20 +73,28 @@ public class ModifyAccounts extends DatabaseController {
             return false; // account add failed
         }
         openConnection();
-
         // Then, add an account to the database.
         String addAccountString = "INSERT INTO " + ACCOUNT_DB_NAME + " (account_id, account_name, account_dob, account_role) VALUES (?, ?, ?, ?);";
 
         // RULE: Avoid SQL injection.
         PreparedStatement addAccountToDB = connection.prepareStatement(addAccountString);
-        addAccountToDB.setString(1, account.getAccountId().toString());
-        addAccountToDB.setString(2, account.getAccountHolderName());
-        addAccountToDB.setString(3, account.getAccountHolderBirthDate().toString());
-        addAccountToDB.setString(4, account.getAccountHolderRole().toString());
-        addAccountToDB.executeUpdate();
 
-        closeConnection(); // Finally, close connection
-        return true;
+        try {
+            addAccountToDB.setString(1, account.getAccountId().toString());
+            addAccountToDB.setString(2, account.getAccountHolderName());
+            addAccountToDB.setString(3, account.getAccountHolderBirthDate().toString());
+            addAccountToDB.setString(4, account.getAccountHolderRole().toString());
+            addAccountToDB.executeUpdate();
+
+            return true;
+        } finally {
+            try {
+                addAccountToDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public boolean removeAccount(UUID accountID) throws SQLException {
@@ -101,15 +116,25 @@ public class ModifyAccounts extends DatabaseController {
         }
 
         openConnection();
+
         // the table SHOULD exist at this point. if not, an error should be thrown.
         String removeAccountString = "DELETE FROM " + ACCOUNT_DB_NAME + " WHERE account_id = ?";
         
         PreparedStatement removeAccountFromDB = connection.prepareStatement(removeAccountString);
-        removeAccountFromDB.setString(1, accountID.toString());
-        removeAccountFromDB.executeUpdate();
 
-        closeConnection();
-        return true;
+        try {
+            removeAccountFromDB.setString(1, accountID.toString());
+            removeAccountFromDB.executeUpdate();
+
+            return true;
+        } finally {
+            try {
+                removeAccountFromDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public Account getAccount(UUID accountID) throws SQLException {
@@ -121,27 +146,36 @@ public class ModifyAccounts extends DatabaseController {
         // Open connection
         openConnection();
 
-        // Get account from database
+        Account account = null;
         String getAccountString = "SELECT account_id, account_name, account_dob, account_role FROM " + ACCOUNT_DB_NAME + " WHERE account_id = ?";
         PreparedStatement getAccountFromDB = connection.prepareStatement(getAccountString);
-        getAccountFromDB.setString(1, accountID.toString());
 
-        ResultSet rs = getAccountFromDB.executeQuery();
-        Account account = null;
-        // if we found an account
-        if (rs.next()) {
-            account = new Account(
-                UUID.fromString(rs.getString("account_id")),
-                rs.getString("account_name"),
-                LocalDate.parse(rs.getString("account_dob")),
-                Role.valueOf(rs.getString("account_role"))
-            );
+        try {
+            // Get account from database
+            getAccountFromDB.setString(1, accountID.toString());
+
+            ResultSet rs = getAccountFromDB.executeQuery();
+            
+            // if we found an account
+            if (rs.next()) {
+                account = new Account(
+                    UUID.fromString(rs.getString("account_id")),
+                    rs.getString("account_name"),
+                    LocalDate.parse(rs.getString("account_dob")),
+                    Role.valueOf(rs.getString("account_role"))
+                );
+            }
+
+            return account;
+        } finally {
+            try {
+                getAccountFromDB.close();
+                closeConnection();
+                
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-        // Close connection
-        closeConnection();
-
-        // Return account object
-        return account;
     }
 
     public void importAdmins(File xmlFile) throws Exception {
@@ -201,9 +235,16 @@ public class ModifyAccounts extends DatabaseController {
                     );
                     accountsToAdd.add(curAccount);
                 }
+                addAccounts(accountsToAdd);
             }
-            addAccounts(accountsToAdd);
-        }
+        } finally {
+            try {
+                ifAccountDBExists.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }        
     }
 
     private boolean addAccounts(List<Account> accounts) throws SQLException {
@@ -211,20 +252,29 @@ public class ModifyAccounts extends DatabaseController {
             return false; // cannot add zero accounts;
         }
         openConnection();
-         // create account DB if necessary
         Statement createAccountDB = connection.createStatement();
-        createAccountDB.executeUpdate(ACCOUNT_DB);
-        createAccountDB.close();
+        PreparedStatement addAccountToDB = connection.prepareStatement(ACCOUNT_INSERT);
+        try {
+            // create account DB if necessary
+            createAccountDB.executeUpdate(ACCOUNT_DB);
+            
+            for (Account curAccount: accounts) {
+                addAccountToDB.setString(1, curAccount.getAccountId().toString());
+                addAccountToDB.setString(2, curAccount.getAccountHolderName());
+                addAccountToDB.setString(3, curAccount.getAccountHolderBirthDate().toString());
+                addAccountToDB.setString(4, curAccount.getAccountHolderRole().toString());
+                addAccountToDB.executeUpdate();
+            }
 
-        for (Account curAccount: accounts) {
-            PreparedStatement addAccountToDB = connection.prepareStatement(ACCOUNT_INSERT);
-            addAccountToDB.setString(1, curAccount.getAccountId().toString());
-            addAccountToDB.setString(2, curAccount.getAccountHolderName());
-            addAccountToDB.setString(3, curAccount.getAccountHolderBirthDate().toString());
-            addAccountToDB.setString(4, curAccount.getAccountHolderRole().toString());
-            addAccountToDB.executeUpdate();
+            return true;
+        } finally {
+            try {
+                createAccountDB.close();
+                addAccountToDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-        closeConnection();
-        return true;
     }
 }

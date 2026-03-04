@@ -441,9 +441,18 @@ public class InputController {
             FileReader fileReader = new FileReader(filePath);
             int buffer;
             char data;
-            while ((buffer = fileReader.read()) != -1) {
-                data = (char) buffer;
-                System.out.print(data);
+            
+            try {
+                while ((buffer = fileReader.read()) != -1) {
+                    data = (char) buffer;
+                    System.out.print(data);
+                }
+            } finally {
+                try {
+                    fileReader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -452,6 +461,8 @@ public class InputController {
         }
     }
 
+    public void cleanUp() {
+        scanner.close();
     private UUID bookNotTakenValidation(ModifyRentedBooks rentedBooks, ModifyBooks books) throws SQLException {
         boolean invalidId = true;
         UUID bookId = null;
