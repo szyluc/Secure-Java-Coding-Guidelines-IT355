@@ -1,3 +1,4 @@
+import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -43,124 +44,202 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
     public void createRentedBooksTable() throws Exception {
         openConnection();
         Statement createRentedBookDB = connection.createStatement();
-        createRentedBookDB.executeUpdate(RENTED_BOOKS_DB);
-        createRentedBookDB.close();
-        closeConnection();
+
+        try {
+            createRentedBookDB.executeUpdate(RENTED_BOOKS_DB);
+        } finally {
+            try {
+                createRentedBookDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    public LocalDate rentBook(Account account, Book book) throws Exception {
+    public LocalDateTime rentBook(Account account, Book book) throws Exception {
+       if(account == null) {
+        throw new IllegalArgumentException();
+       }
+       if(book == null) {
+        throw new IllegalArgumentException();
+       }
+
        // Open connection
         openConnection();
 
         // Add rented book to database
-        LocalDate nowDate = LocalDate.now(); // time to be passed to receipt
+        LocalDateTime nowDate = LocalDateTime.now(); // time to be passed to receipt
         String addRentedBookString = "INSERT INTO " + RENTED_BOOKS_DB_NAME + " (b_id, a_id, checkout_date) VALUES (?, ?, ?);";
         PreparedStatement addRentedBookToDB = connection.prepareStatement(addRentedBookString);
-        addRentedBookToDB.setString(1, book.getBookId().toString());
-        addRentedBookToDB.setString(2, account.getAccountId().toString());
-        addRentedBookToDB.setString(3, nowDate.toString());
-        addRentedBookToDB.executeUpdate();
 
-        // Close connection
-        closeConnection();
+        try {
+            addRentedBookToDB.setString(1, book.getBookId().toString());
+            addRentedBookToDB.setString(2, account.getAccountId().toString());
+            addRentedBookToDB.setString(3, nowDate.toString());
+            addRentedBookToDB.executeUpdate();
 
-        // Print receipt
-        makeReceipt(book, nowDate);
+            // Print receipt
+            makeReceipt(book, nowDate);
 
-        // Return boolean indicating success
-        return nowDate;
+            // Return boolean indicating success
+            return nowDate;
+        } finally {
+            try {
+                addRentedBookToDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public boolean returnBook(UUID accountID, UUID bookID) throws SQLException {
+        if(accountID == null) {
+            throw new IllegalArgumentException();
+        }
+
+        if(bookID == null) {
+            throw new IllegalArgumentException();
+        }
+
+
+        
         // Open connection
         openConnection();
 
         // Remove rented book from database
         String removeAccountString = "DELETE FROM " + RENTED_BOOKS_DB_NAME + " WHERE b_id = ? AND a_id = ?";
         PreparedStatement removeRentedBookFromDB = connection.prepareStatement(removeAccountString);
-        removeRentedBookFromDB.setString(1, bookID.toString());
-        removeRentedBookFromDB.setString(2, accountID.toString());
-        removeRentedBookFromDB.executeUpdate();
 
-        // Close connection
-        closeConnection();
+        try {
+            removeRentedBookFromDB.setString(1, bookID.toString());
+            removeRentedBookFromDB.setString(2, accountID.toString());
+            removeRentedBookFromDB.executeUpdate();
 
-        // Return boolean indicating success
-        return true;
+            // Return boolean indicating success
+            return true;
+        } finally {
+            try {
+                removeRentedBookFromDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public RentedBook getRentedBook(UUID accountID, UUID bookID) throws SQLException {
+        
+        if(accountID == null) {
+            throw new IllegalArgumentException();
+        }
+
+        if(bookID == null) {
+            throw new IllegalArgumentException();
+        }
         // Open connection
         openConnection();
 
         // Get rented book from database
         String getRentedBookString = "SELECT * FROM " + RENTED_BOOKS_DB_NAME + " WHERE b_id = ? AND a_id = ?";
         PreparedStatement getRentedBookFromDB = connection.prepareStatement(getRentedBookString);
-        getRentedBookFromDB.setString(1, bookID.toString());
-        getRentedBookFromDB.setString(2, accountID.toString());
-        ResultSet resultSet = getRentedBookFromDB.executeQuery();
-        RentedBook curRentedBook = null;
-        if (resultSet.next()) {
-            UUID bookUUID = UUID.fromString(resultSet.getString(1));
-            UUID accountUUID = UUID.fromString(resultSet.getString(2));
-            LocalDate rentDate = LocalDate.parse(resultSet.getString(3));
-            curRentedBook = new RentedBook(bookUUID, accountUUID, rentDate);
-        }
-        // Close connection
-        closeConnection();
 
-        // Return rented book object
-        return curRentedBook;
+        try {
+            getRentedBookFromDB.setString(1, bookID.toString());
+            getRentedBookFromDB.setString(2, accountID.toString());
+            ResultSet resultSet = getRentedBookFromDB.executeQuery();
+            RentedBook curRentedBook = null;
+            if (resultSet.next()) {
+                UUID bookUUID = UUID.fromString(resultSet.getString(1));
+                UUID accountUUID = UUID.fromString(resultSet.getString(2));
+                LocalDate rentDate = LocalDate.parse(resultSet.getString(3));
+                curRentedBook = new RentedBook(bookUUID, accountUUID, rentDate);
+            }
+
+            // Return rented book object
+            return curRentedBook;
+        } finally {
+            try {
+                getRentedBookFromDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public boolean isRented(UUID bookID) throws SQLException {
+
+        if(bookID == null) {
+            throw new IllegalArgumentException();
+        }
         // Open connection
         openConnection();
 
         // Get rented books from database
         String getRentedBookString = "SELECT * FROM " + RENTED_BOOKS_DB_NAME + " WHERE b_id = ?";
         PreparedStatement getRentedBookFromDB = connection.prepareStatement(getRentedBookString);
-        getRentedBookFromDB.setString(1, bookID.toString());
-        ResultSet resultSet = getRentedBookFromDB.executeQuery();
 
-        // Check if book is rented
-        boolean isRented = false;
-        if (resultSet.next()) {
-            isRented = true;
+        try {
+            getRentedBookFromDB.setString(1, bookID.toString());
+            ResultSet resultSet = getRentedBookFromDB.executeQuery();
+
+            // Check if book is rented
+            boolean isRented = false;
+            if (resultSet.next()) {
+                isRented = true;
+            }
+
+            // Return boolean
+            return isRented;
+        } finally {
+            try {
+                getRentedBookFromDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-
-        // Close connection
-        closeConnection();
-
-        // Return boolean
-        return isRented;
     }
 
     public List<RentedBook> getRentedBooks(UUID accountID) throws SQLException {
+       
+        if(accountID == null) {
+            throw new IllegalArgumentException();
+        }
         // Open connection
         openConnection();
 
         // Get rented book from database
         String getRentedBookString = "SELECT * FROM " + RENTED_BOOKS_DB_NAME + " WHERE a_id = ?";
         PreparedStatement getRentedBookFromDB = connection.prepareStatement(getRentedBookString);
-        getRentedBookFromDB.setString(1, accountID.toString());
-        List<RentedBook> rentedBooks = new ArrayList<>();
-        ResultSet resultSet = getRentedBookFromDB.executeQuery();
-        while (resultSet.next()) {
-            UUID bookUUID = UUID.fromString(resultSet.getString(1));
-            UUID accountUUID = UUID.fromString(resultSet.getString(2));
-            LocalDate rentDate = LocalDate.parse(resultSet.getString(3));
-            RentedBook curRentedBook = new RentedBook(bookUUID, accountUUID, rentDate);
-            rentedBooks.add(curRentedBook);
-        }
-        // Close connection
-        closeConnection();
 
-        // Return rented book object
-        return rentedBooks;
+        try {
+            getRentedBookFromDB.setString(1, accountID.toString());
+            List<RentedBook> rentedBooks = new ArrayList<>();
+            ResultSet resultSet = getRentedBookFromDB.executeQuery();
+            while (resultSet.next()) {
+                UUID bookUUID = UUID.fromString(resultSet.getString(1));
+                UUID accountUUID = UUID.fromString(resultSet.getString(2));
+                LocalDate rentDate = LocalDate.parse(resultSet.getString(3));
+                RentedBook curRentedBook = new RentedBook(bookUUID, accountUUID, rentDate);
+                rentedBooks.add(curRentedBook);
+            }
+
+            // Return rented book object
+            return rentedBooks;
+        } finally {
+            try {
+                getRentedBookFromDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
-    private void makeReceipt(Book curBook, LocalDate nowDate) throws Exception {
+    private void makeReceipt(Book curBook, LocalDateTime nowDate) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document document = builder.newDocument();
@@ -190,6 +269,14 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
         DOMSource source = new DOMSource(document);
+
+        // first, we should ensure the receipts directory exists. if not, we need to make it
+        File receiptsDir = new File("receipts");
+
+        if (!receiptsDir.exists()) {
+            receiptsDir.mkdirs();
+        }
+
         StreamResult result = new StreamResult("receipts/" + nowDate.toString() + ".xml");
         transformer.transform(source, result);
     }

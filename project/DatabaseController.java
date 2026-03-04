@@ -17,6 +17,10 @@ public abstract class DatabaseController {
     protected Connection connection;
 
     public DatabaseController(String databaseName) {
+
+        if(databaseName == null || databaseName.isEmpty()){
+            throw new IllegalArgumentException();
+        }
         this.databaseName = databaseName;
     }
 
@@ -42,6 +46,14 @@ public abstract class DatabaseController {
     }
 
     public int getRowCount(String colName, String colVal) throws SQLException {
+          if(colName == null || colName.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+
+        if(colVal == null || colVal.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
+        
         // Open connection
         openConnection();
 

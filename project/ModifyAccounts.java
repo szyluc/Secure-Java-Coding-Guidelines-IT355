@@ -11,13 +11,26 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 
 import java.io.File;
+import java.io.IOException;
 
 public class ModifyAccounts extends DatabaseController {
     private final String ACCOUNT_DB = """
@@ -43,9 +56,16 @@ public class ModifyAccounts extends DatabaseController {
     public void createAccountTable() throws Exception {
         openConnection();
         Statement createAccountDB = connection.createStatement();
-        createAccountDB.executeUpdate(ACCOUNT_DB);
-        createAccountDB.close();
-        closeConnection();
+        try {
+            createAccountDB.executeUpdate(ACCOUNT_DB);
+        } finally {
+            try {
+                createAccountDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public boolean addAccount(Account account) throws SQLException {
@@ -53,26 +73,38 @@ public class ModifyAccounts extends DatabaseController {
             return false; // account add failed
         }
         openConnection();
-
         // Then, add an account to the database.
         String addAccountString = "INSERT INTO " + ACCOUNT_DB_NAME + " (account_id, account_name, account_dob, account_role) VALUES (?, ?, ?, ?);";
 
         // RULE: Avoid SQL injection.
         PreparedStatement addAccountToDB = connection.prepareStatement(addAccountString);
-        addAccountToDB.setString(1, account.getAccountId().toString());
-        addAccountToDB.setString(2, account.getAccountHolderName());
-        addAccountToDB.setString(3, account.getAccountHolderBirthDate().toString());
-        addAccountToDB.setString(4, account.getAccountHolderRole().toString());
-        addAccountToDB.executeUpdate();
 
-        closeConnection(); // Finally, close connection
-        return true;
+        try {
+            addAccountToDB.setString(1, account.getAccountId().toString());
+            addAccountToDB.setString(2, account.getAccountHolderName());
+            addAccountToDB.setString(3, account.getAccountHolderBirthDate().toString());
+            addAccountToDB.setString(4, account.getAccountHolderRole().toString());
+            addAccountToDB.executeUpdate();
+
+            return true;
+        } finally {
+            try {
+                addAccountToDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public boolean removeAccount(UUID accountID) throws SQLException {
         // Create table if necessary? Should not have to create DB to remove (remove 0 user)
         if (accountID == null) {
             return false; // invalid ID
+        }
+
+        if (getRowCount("account_id", accountID.toString()) == 0) {
+            return false; // account does not exist
         }
 
         ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
@@ -84,15 +116,25 @@ public class ModifyAccounts extends DatabaseController {
         }
 
         openConnection();
+
         // the table SHOULD exist at this point. if not, an error should be thrown.
         String removeAccountString = "DELETE FROM " + ACCOUNT_DB_NAME + " WHERE account_id = ?";
         
         PreparedStatement removeAccountFromDB = connection.prepareStatement(removeAccountString);
-        removeAccountFromDB.setString(1, accountID.toString());
-        removeAccountFromDB.executeUpdate();
 
-        closeConnection();
-        return true;
+        try {
+            removeAccountFromDB.setString(1, accountID.toString());
+            removeAccountFromDB.executeUpdate();
+
+            return true;
+        } finally {
+            try {
+                removeAccountFromDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public Account getAccount(UUID accountID) throws SQLException {
@@ -104,30 +146,42 @@ public class ModifyAccounts extends DatabaseController {
         // Open connection
         openConnection();
 
-        // Get account from database
+        Account account = null;
         String getAccountString = "SELECT account_id, account_name, account_dob, account_role FROM " + ACCOUNT_DB_NAME + " WHERE account_id = ?";
         PreparedStatement getAccountFromDB = connection.prepareStatement(getAccountString);
-        getAccountFromDB.setString(1, accountID.toString());
 
-        ResultSet rs = getAccountFromDB.executeQuery();
-        Account account = null;
-        // if we found an account
-        if (rs.next()) {
-            account = new Account(
-                UUID.fromString(rs.getString("account_id")),
-                rs.getString("account_name"),
-                LocalDate.parse(rs.getString("account_dob")),
-                Role.valueOf(rs.getString("account_role"))
-            );
+        try {
+            // Get account from database
+            getAccountFromDB.setString(1, accountID.toString());
+
+            ResultSet rs = getAccountFromDB.executeQuery();
+            
+            // if we found an account
+            if (rs.next()) {
+                account = new Account(
+                    UUID.fromString(rs.getString("account_id")),
+                    rs.getString("account_name"),
+                    LocalDate.parse(rs.getString("account_dob")),
+                    Role.valueOf(rs.getString("account_role"))
+                );
+            }
+
+            return account;
+        } finally {
+            try {
+                getAccountFromDB.close();
+                closeConnection();
+                
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-        // Close connection
-        closeConnection();
-
-        // Return account object
-        return account;
     }
 
     public void importAdmins(File xmlFile) throws Exception {
+        if(xmlFile == null || !xmlFile.exists()) {
+            throw new IllegalAccessException("File not exits");
+        }
         openConnection();
         PreparedStatement ifAccountDBExists = connection.prepareStatement(ACCOUNT_EXISTS);
         ifAccountDBExists.setString(1, ACCOUNT_DB_NAME);
@@ -135,6 +189,34 @@ public class ModifyAccounts extends DatabaseController {
         closeConnection();
 
         if (!resultSet.next()) {
+            InputSource xmlStream = new InputSource(new File("admins.xml").getAbsolutePath());
+            SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            DefaultHandler defaultHandler = new DefaultHandler() {
+                public void warning(SAXParseException e) throws SAXException {
+                    throw e;
+                }
+                public void error(SAXParseException e) throws SAXException {
+                    throw e;
+                }
+                public void fatalError(SAXParseException e) throws SAXException {
+                    throw e;
+                }
+            };
+            StreamSource streamSource = new StreamSource(new File("admins.xsd"));
+            try {
+                Schema schema = schemaFactory.newSchema(streamSource);
+                SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+                saxParserFactory.setSchema(schema);
+                SAXParser saxParser = saxParserFactory.newSAXParser();
+                XMLReader xmlReader = saxParser.getXMLReader();
+                xmlReader.setEntityResolver(new CustomResolver());
+                saxParser.parse(xmlStream, defaultHandler);
+            } catch (ParserConfigurationException e) {
+                throw new IOException("Unable to validate XML", e);
+            } catch (SAXException e) {
+                throw new IOException("Invalid XML", e);
+            }
+
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document document = builder.parse(xmlFile);
@@ -153,9 +235,16 @@ public class ModifyAccounts extends DatabaseController {
                     );
                     accountsToAdd.add(curAccount);
                 }
+                addAccounts(accountsToAdd);
             }
-            addAccounts(accountsToAdd);
-        }
+        } finally {
+            try {
+                ifAccountDBExists.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }        
     }
 
     private boolean addAccounts(List<Account> accounts) throws SQLException {
@@ -163,20 +252,29 @@ public class ModifyAccounts extends DatabaseController {
             return false; // cannot add zero accounts;
         }
         openConnection();
-         // create account DB if necessary
         Statement createAccountDB = connection.createStatement();
-        createAccountDB.executeUpdate(ACCOUNT_DB);
-        createAccountDB.close();
+        PreparedStatement addAccountToDB = connection.prepareStatement(ACCOUNT_INSERT);
+        try {
+            // create account DB if necessary
+            createAccountDB.executeUpdate(ACCOUNT_DB);
+            
+            for (Account curAccount: accounts) {
+                addAccountToDB.setString(1, curAccount.getAccountId().toString());
+                addAccountToDB.setString(2, curAccount.getAccountHolderName());
+                addAccountToDB.setString(3, curAccount.getAccountHolderBirthDate().toString());
+                addAccountToDB.setString(4, curAccount.getAccountHolderRole().toString());
+                addAccountToDB.executeUpdate();
+            }
 
-        for (Account curAccount: accounts) {
-            PreparedStatement addAccountToDB = connection.prepareStatement(ACCOUNT_INSERT);
-            addAccountToDB.setString(1, curAccount.getAccountId().toString());
-            addAccountToDB.setString(2, curAccount.getAccountHolderName());
-            addAccountToDB.setString(3, curAccount.getAccountHolderBirthDate().toString());
-            addAccountToDB.setString(4, curAccount.getAccountHolderRole().toString());
-            addAccountToDB.executeUpdate();
+            return true;
+        } finally {
+            try {
+                createAccountDB.close();
+                addAccountToDB.close();
+                closeConnection();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
-        closeConnection();
-        return true;
     }
 }
