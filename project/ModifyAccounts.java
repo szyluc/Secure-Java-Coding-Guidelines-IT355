@@ -11,13 +11,26 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 
 import java.io.File;
+import java.io.IOException;
 
 public class ModifyAccounts extends DatabaseController {
     private final String ACCOUNT_DB = """
@@ -135,6 +148,34 @@ public class ModifyAccounts extends DatabaseController {
         closeConnection();
 
         if (!resultSet.next()) {
+            InputSource xmlStream = new InputSource(new File("admins.xml").getAbsolutePath());
+            SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            DefaultHandler defaultHandler = new DefaultHandler() {
+                public void warning(SAXParseException e) throws SAXException {
+                    throw e;
+                }
+                public void error(SAXParseException e) throws SAXException {
+                    throw e;
+                }
+                public void fatalError(SAXParseException e) throws SAXException {
+                    throw e;
+                }
+            };
+            StreamSource streamSource = new StreamSource(new File("admins.xsd"));
+            try {
+                Schema schema = schemaFactory.newSchema(streamSource);
+                SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+                saxParserFactory.setSchema(schema);
+                SAXParser saxParser = saxParserFactory.newSAXParser();
+                XMLReader xmlReader = saxParser.getXMLReader();
+                xmlReader.setEntityResolver(new CustomResolver());
+                saxParser.parse(xmlStream, defaultHandler);
+            } catch (ParserConfigurationException e) {
+                throw new IOException("Unable to validate XML", e);
+            } catch (SAXException e) {
+                throw new IOException("Invalid XML", e);
+            }
+
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document document = builder.parse(xmlFile);
