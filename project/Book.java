@@ -33,7 +33,11 @@ public class Book {
     }
 
     public String toString() {
-        return bookID + ": " + bookName + " by " + bookAuthor + ". Category: " + bookCategory  + ".";
+        return bookID + " | " + bookName + ", by " + bookAuthor + ". Category: " + bookCategory + ".";
+    }
+
+    public String transactionString() {
+        return bookName + ", by " + bookAuthor + ".";
     }
 
     private void setBookDetails(String bookName, String bookAuthor, String bookCategory) {
