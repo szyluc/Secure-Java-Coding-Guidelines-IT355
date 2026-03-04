@@ -30,7 +30,7 @@ public abstract class DatabaseController {
     }
 
     public boolean closeConnection() throws SQLException {
-        if (connection != null || !connection.isClosed()) {
+        if (connection != null && !connection.isClosed()) {
             connection.close();
             return true;
         }
