@@ -18,7 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class ModifyRentedBooks extends DatabaseController {
+import java.io.Closeable;
+
+// MET12-J: Implements Closeable so the caller can explicitly release
+// resources with close() rather than a finalizer.
+public class ModifyRentedBooks extends DatabaseController implements Closeable {
     private static final String RENTED_BOOKS_DB = """
         CREATE TABLE IF NOT EXISTS rented_books (
             b_id TEXT NOT NULL,
@@ -31,6 +35,7 @@ public class ModifyRentedBooks extends DatabaseController {
         """;
 
     private static final String RENTED_BOOKS_DB_NAME = "rented_books";
+    private boolean closed = false;
 
     public ModifyRentedBooks() {
         super(RENTED_BOOKS_DB_NAME);
@@ -274,6 +279,19 @@ public class ModifyRentedBooks extends DatabaseController {
 
         StreamResult result = new StreamResult("receipts/" + nowDate.toString() + ".xml");
         transformer.transform(source, result);
+    }
+
+    // MET12-J: Explicit cleanup, release any held resources
+    @Override
+    public void close() {
+        if (!closed) {
+            closed = true;
+            try {
+                closeConnection();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
     
 }

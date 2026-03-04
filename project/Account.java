@@ -1,7 +1,12 @@
 import java.time.LocalDate;
 import java.util.UUID;
 
-public final class Account {
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+public class Account implements Serializable{
     private final UUID accountId;
     private String accountHolderName;
     private LocalDate accountHolderBirthDate;
@@ -76,5 +81,24 @@ public final class Account {
         // role
         validateAccountHolderRole(accountHolderRole);
         this.accountHolderRole = accountHolderRole;
+    }
+
+    // SER04-J: Replicate constructor validation during serialization so that
+    // an attacker cannot craft a serialized byte stream that bypasses the
+    // checks normally enforced by the constructor.
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        validateAccountHolderName(this.accountHolderName);
+        validateAccountHolderBirthDate(this.accountHolderBirthDate);
+        validateAccountHolderRole(this.accountHolderRole);
+        out.defaultWriteObject();
+    }
+
+    // SER04-J: Re-run the same validation the constructor uses after
+    // deserialization, so a tampered object cannot survive the process.
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        validateAccountHolderName(this.accountHolderName);
+        validateAccountHolderBirthDate(this.accountHolderBirthDate);
+        validateAccountHolderRole(this.accountHolderRole);
     }
 }
