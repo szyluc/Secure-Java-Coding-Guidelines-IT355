@@ -3,6 +3,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.InputMismatchException;
 import java.util.List;
@@ -393,11 +394,10 @@ public class InputController {
         UUID bookId = bookTakenValidation(modifyRentedBooks, modifyBooks); 
 
         Book book = modifyBooks.getBook(bookId);
-        LocalDate nowDate = modifyRentedBooks.rentBook(currentAccount, book); // rents the book and makes the receipt
+        LocalDateTime rentdate = modifyRentedBooks.rentBook(currentAccount, book);
         String path = System.getProperty("user.dir");
-
         System.out.println("\nYou have successfully checked out: " + book.transactionString());
-        System.out.println("Your receipt has been saved to: " + path + "/receipts/" + nowDate.toString() + ".xml");
+        System.out.println("Your receipt has been saved to: " + path + "/" + rentdate.toString() + ".xml");
     }
 
     private void handleReturnBookMenu() throws SQLException, Exception {
