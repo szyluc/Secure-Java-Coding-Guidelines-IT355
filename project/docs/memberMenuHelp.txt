@@ -1,0 +1,7 @@
+View account: Displays the rented books that your account holds
+Search for a book: Allows you to search a book by name, author, or category and get details about it
+Rent a book: Allows you to rent a new book by providing the id of that book
+Return a book: Allows you return a book you have rented by providing the id of the book
+Help: Displays some information about the commands in the menu
+Logout: Signs you out of your current account and redirects you to the login menu
+Exit: Terminates the program when requested
