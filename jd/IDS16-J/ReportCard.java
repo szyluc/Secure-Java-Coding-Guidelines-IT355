@@ -37,7 +37,7 @@ public class ReportCard {
              writer.write(report);
              writer.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Exception caught");
         }
         input.close();
 

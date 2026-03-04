@@ -36,7 +36,7 @@ public class ListMaker {
                 response = input.nextLine();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Exception caught");
         }
         input.close();
     }

@@ -32,15 +32,15 @@ class Login {
             char[] password = {'m', 'y', 'p', 'a', 's', 's'};
             login.doPrivilegedAction(username, password);
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("SQLException caught");
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Exception caught");
         } finally {
             if (login != null) {
                 try {
                     login.closeConnection();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    System.out.println("SQLException caught");
                 }
             }
         }
@@ -60,7 +60,7 @@ class Login {
                 createDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -101,7 +101,7 @@ class Login {
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.out.println("SQLException caught.");
         }
     }
 

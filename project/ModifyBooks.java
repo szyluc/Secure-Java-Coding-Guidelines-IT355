@@ -76,7 +76,7 @@ public class ModifyBooks extends DatabaseController {
                 createBookDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -108,7 +108,7 @@ public class ModifyBooks extends DatabaseController {
                 addBookToDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -148,7 +148,7 @@ public class ModifyBooks extends DatabaseController {
                 removeBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -187,7 +187,7 @@ public class ModifyBooks extends DatabaseController {
                 updateBook.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -219,7 +219,7 @@ public class ModifyBooks extends DatabaseController {
                 getBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -288,7 +288,7 @@ public class ModifyBooks extends DatabaseController {
                 ifBookDBExists.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -325,7 +325,7 @@ public class ModifyBooks extends DatabaseController {
                 getBookByNameFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -364,7 +364,7 @@ public class ModifyBooks extends DatabaseController {
                 getBookByAuthorFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -404,7 +404,7 @@ public class ModifyBooks extends DatabaseController {
                 getBookByGenreFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -434,7 +434,7 @@ public class ModifyBooks extends DatabaseController {
                 createBookDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }

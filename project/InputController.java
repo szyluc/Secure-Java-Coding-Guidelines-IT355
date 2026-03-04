@@ -442,13 +442,13 @@ public class InputController {
                 try {
                     fileReader.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.out.println("IOException caught.");
                 }
             }
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            System.out.println("FileNotFoundException caught");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("IOException caught");
         }
     }
 

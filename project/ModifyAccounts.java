@@ -63,7 +63,7 @@ public class ModifyAccounts extends DatabaseController {
                 createAccountDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -92,7 +92,7 @@ public class ModifyAccounts extends DatabaseController {
                 addAccountToDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -132,7 +132,7 @@ public class ModifyAccounts extends DatabaseController {
                 removeAccountFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -173,7 +173,7 @@ public class ModifyAccounts extends DatabaseController {
                 closeConnection();
                 
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -241,7 +241,7 @@ public class ModifyAccounts extends DatabaseController {
                 ifAccountDBExists.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -272,7 +272,7 @@ public class ModifyAccounts extends DatabaseController {
                 addAccountToDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }

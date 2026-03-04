@@ -52,7 +52,7 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
                 createRentedBookDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -89,7 +89,7 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
                 addRentedBookToDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -124,7 +124,7 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
                 removeRentedBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -164,7 +164,7 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
                 getRentedBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -198,7 +198,7 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
                 getRentedBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -234,7 +234,7 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
                 getRentedBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -289,7 +289,7 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
             try {
                 closeConnection();
             } catch (Exception e) {
-                e.printStackTrace();
+                System.out.println("Exception caught.");
             }
         }
     }
