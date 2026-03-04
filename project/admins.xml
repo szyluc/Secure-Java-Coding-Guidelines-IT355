@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<admins>
+    <admin>
+        <id>1d1475b6-b42a-4a77-a710-bd1764df746f</id>
+        <name>Admin 1</name>
+        <date>2000-01-01</date>
+        <role>ADMIN</role>
+    </admin>
+    <admin>
+        <id>85a7256e-45fa-490b-899c-4b9334a369fc</id>
+        <name>Admin 2</name>
+        <date>2010-01-01</date>
+        <role>ADMIN</role>
+    </admin>
+    
+</admins>

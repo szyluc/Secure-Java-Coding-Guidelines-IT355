@@ -6,8 +6,18 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.sql.PreparedStatement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
+import org.w3c.dom.Element;
+
+import java.io.File;
 
 public class ModifyAccounts extends DatabaseController {
     private final String ACCOUNT_DB = """
@@ -20,8 +30,22 @@ public class ModifyAccounts extends DatabaseController {
         """;
     private static final String ACCOUNT_DB_NAME = "account";
 
+    private static final String ACCOUNT_INSERT = "INSERT INTO " + ACCOUNT_DB_NAME 
+    + "(account_id, account_name, account_dob, account_role) VALUES (?, ?, ?, ?);";
+
+
+    private static final String ACCOUNT_EXISTS = "SELECT name FROM sqlite_master WHERE type='table' AND name = ?";
+
     public ModifyAccounts() {
         super(ACCOUNT_DB_NAME);
+    }
+
+    public void createAccountTable() throws Exception {
+        openConnection();
+        Statement createAccountDB = connection.createStatement();
+        createAccountDB.executeUpdate(ACCOUNT_DB);
+        createAccountDB.close();
+        closeConnection();
     }
 
     public boolean addAccount(Account account) throws SQLException {
@@ -29,10 +53,6 @@ public class ModifyAccounts extends DatabaseController {
             return false; // account add failed
         }
         openConnection();
-        // Create table if necessary.
-        Statement createAccountDB = connection.createStatement();
-        createAccountDB.executeUpdate(ACCOUNT_DB);
-        createAccountDB.close();
 
         // Then, add an account to the database.
         String addAccountString = "INSERT INTO " + ACCOUNT_DB_NAME + " (account_id, account_name, account_dob, account_role) VALUES (?, ?, ?, ?);";
@@ -105,5 +125,58 @@ public class ModifyAccounts extends DatabaseController {
 
         // Return account object
         return account;
+    }
+
+    public void importAdmins(File xmlFile) throws Exception {
+        openConnection();
+        PreparedStatement ifAccountDBExists = connection.prepareStatement(ACCOUNT_EXISTS);
+        ifAccountDBExists.setString(1, ACCOUNT_DB_NAME);
+        ResultSet resultSet = ifAccountDBExists.executeQuery();
+        closeConnection();
+
+        if (!resultSet.next()) {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document document = builder.parse(xmlFile);
+
+            List<Account> accountsToAdd = new ArrayList<>();
+            NodeList accountsNodeList = document.getElementsByTagName("admin");
+            for (int i=0; i<accountsNodeList.getLength(); i++) {
+                Node curAccountNode = accountsNodeList.item(i);
+                if (curAccountNode.getNodeType() == Node.ELEMENT_NODE) {
+                    Element accountElement = (Element) curAccountNode;
+                    Account curAccount = new Account(
+                        UUID.fromString(getTagValue("id", accountElement)),
+                        getTagValue("name", accountElement),
+                        LocalDate.parse(getTagValue("date", accountElement)),
+                        Role.valueOf(getTagValue("role", accountElement))
+                    );
+                    accountsToAdd.add(curAccount);
+                }
+            }
+            addAccounts(accountsToAdd);
+        }
+    }
+
+    private boolean addAccounts(List<Account> accounts) throws SQLException {
+        if (accounts == null || accounts.size() == 0) {
+            return false; // cannot add zero accounts;
+        }
+        openConnection();
+         // create account DB if necessary
+        Statement createAccountDB = connection.createStatement();
+        createAccountDB.executeUpdate(ACCOUNT_DB);
+        createAccountDB.close();
+
+        for (Account curAccount: accounts) {
+            PreparedStatement addAccountToDB = connection.prepareStatement(ACCOUNT_INSERT);
+            addAccountToDB.setString(1, curAccount.getAccountId().toString());
+            addAccountToDB.setString(2, curAccount.getAccountHolderName());
+            addAccountToDB.setString(3, curAccount.getAccountHolderBirthDate().toString());
+            addAccountToDB.setString(4, curAccount.getAccountHolderRole().toString());
+            addAccountToDB.executeUpdate();
+        }
+        closeConnection();
+        return true;
     }
 }

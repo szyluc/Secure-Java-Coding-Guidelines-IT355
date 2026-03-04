@@ -8,9 +8,12 @@ public class Book {
 
     public Book(String bookName, String bookAuthor, String bookCategory) {
         this.bookID = UUID.randomUUID(); // assigns an identifier to the book
-        this.bookName = bookName;
-        this.bookAuthor = bookAuthor;
-        this.bookCategory = bookCategory;
+        setBookDetails(bookName, bookAuthor, bookCategory);
+    }
+
+    public Book(UUID bookID, String bookName, String bookAuthor, String bookCategory) {
+        this.bookID = bookID;
+        setBookDetails(bookName, bookAuthor, bookCategory);
     }
 
     public String getBookName() {
@@ -28,4 +31,15 @@ public class Book {
     public UUID getBookId() {
         return bookID;
     }
+
+    public String toString() {
+        return bookID + ": " + bookName + " by " + bookAuthor + ". Category: " + bookCategory  + ".";
+    }
+
+    private void setBookDetails(String bookName, String bookAuthor, String bookCategory) {
+        this.bookName = bookName;
+        this.bookAuthor = bookAuthor;
+        this.bookCategory = bookCategory;
+    }
+
 }

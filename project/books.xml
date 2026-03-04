@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8">
+<?xml version="1.0" encoding="utf-8"?>
 <books>
     <book>
         <title>The Oddyssey</title>
@@ -32,7 +32,7 @@
     </book>
     <book>
         <title>Horton Hears a Who!</title>
-        <author>Homer</author>
+        <author>Dr. Suess</author>
         <category>Childrens</category>
     </book>
     <book>

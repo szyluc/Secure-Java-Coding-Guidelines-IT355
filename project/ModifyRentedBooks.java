@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class ModifyRentedBooks extends DatabaseController {
-    private static final String RENTED_BOOKS = """
+    private static final String RENTED_BOOKS_DB = """
         CREATE TABLE IF NOT EXISTS rented_books (
             b_id TEXT NOT NULL,
             a_id TEXT NOT NULL,
@@ -35,14 +35,17 @@ public class ModifyRentedBooks extends DatabaseController {
         super(RENTED_BOOKS_DB_NAME);
     }
 
+    public void createRentedBooksTable() throws Exception {
+        openConnection();
+        Statement createRentedBookDB = connection.createStatement();
+        createRentedBookDB.executeUpdate(RENTED_BOOKS_DB);
+        createRentedBookDB.close();
+        closeConnection();
+    }
+
     public LocalDate rentBook(Account account, Book book) throws Exception {
        // Open connection
         openConnection();
-
-         // Create table if necessary
-        Statement createRentedBookDB = connection.createStatement();
-        createRentedBookDB.executeUpdate(RENTED_BOOKS);
-        createRentedBookDB.close();
 
         // Add rented book to database
         LocalDate nowDate = LocalDate.now(); // time to be passed to receipt
@@ -86,18 +89,23 @@ public class ModifyRentedBooks extends DatabaseController {
         openConnection();
 
         // Get rented book from database
-        String getRentedBookString = "SELECT 1 FROM " + RENTED_BOOKS_DB_NAME + " WHERE b_id = ? AND a_id = ?";
+        String getRentedBookString = "SELECT * FROM " + RENTED_BOOKS_DB_NAME + " WHERE b_id = ? AND a_id = ?";
         PreparedStatement getRentedBookFromDB = connection.prepareStatement(getRentedBookString);
         getRentedBookFromDB.setString(1, bookID.toString());
         getRentedBookFromDB.setString(2, accountID.toString());
-        Object rentedBookObject = getRentedBookFromDB.executeQuery().getObject(1);
-        RentedBook rentedBook = (RentedBook)rentedBookObject;
-
+        ResultSet resultSet = getRentedBookFromDB.executeQuery();
+        RentedBook curRentedBook = null;
+        if (resultSet.next()) {
+            UUID bookUUID = UUID.fromString(resultSet.getString(1));
+            UUID accountUUID = UUID.fromString(resultSet.getString(2));
+            LocalDate rentDate = LocalDate.parse(resultSet.getString(3));
+            curRentedBook = new RentedBook(bookUUID, accountUUID, rentDate);
+        }
         // Close connection
         closeConnection();
 
         // Return rented book object
-        return rentedBook;
+        return curRentedBook;
     }
 
     public boolean isRented(UUID bookID) throws SQLException {
@@ -134,7 +142,11 @@ public class ModifyRentedBooks extends DatabaseController {
         List<RentedBook> rentedBooks = new ArrayList<>();
         ResultSet resultSet = getRentedBookFromDB.executeQuery();
         while (resultSet.next()) {
-            rentedBooks.add(getRentedBook(accountID, UUID.fromString(resultSet.getString("b_id"))));
+            UUID bookUUID = UUID.fromString(resultSet.getString(1));
+            UUID accountUUID = UUID.fromString(resultSet.getString(2));
+            LocalDate rentDate = LocalDate.parse(resultSet.getString(3));
+            RentedBook curRentedBook = new RentedBook(bookUUID, accountUUID, rentDate);
+            rentedBooks.add(curRentedBook);
         }
         // Close connection
         closeConnection();
@@ -173,7 +185,7 @@ public class ModifyRentedBooks extends DatabaseController {
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
         DOMSource source = new DOMSource(document);
-        StreamResult result = new StreamResult(nowDate.toString() + ".xml");
+        StreamResult result = new StreamResult("receipts/" + nowDate.toString() + ".xml");
         transformer.transform(source, result);
     }
     

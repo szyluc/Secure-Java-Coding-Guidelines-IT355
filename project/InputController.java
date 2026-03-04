@@ -54,8 +54,9 @@ public class InputController {
         System.out.println("(1) View Account "); // leads to display of any books currently checked out
         System.out.println("(2) Search for a book"); // leads to separate menu for book search
         System.out.println("(3) Rent a book"); // leads user to menu for renting book
-        System.out.println("(4) Log Out"); // logs user out
-        System.out.println("(5) Exit"); // exits program
+        System.out.println("(4) Return a book"); // leads user to menu for returning book
+        System.out.println("(5) Log Out"); // logs user out
+        System.out.println("(6) Exit"); // exits program
         handleUserMainMenu();
     }
 
@@ -63,11 +64,12 @@ public class InputController {
         System.out.println("(1) View Account "); // leads to display of any books currently checked out
         System.out.println("(2) Search for a book"); // leads to separate menu for book search
         System.out.println("(3) Rent a book"); // leads user to menu for renting book
-        System.out.println("(4) Look up another account"); // leads to separate menu for UUID search
-        System.out.println("(5) Add a book"); // leads to separate menu for adding book
-        System.out.println("(6) Delete a book"); // leads to separate menu for deleting book
-        System.out.println("(7) Log Out"); // logs user out
-        System.out.println("(8) Exit"); // exits program
+        System.out.println("(4) Return a book"); // leads user to menu for returning book
+        System.out.println("(5) Look up another account"); // leads to separate menu for UUID search
+        System.out.println("(6) Add a book"); // leads to separate menu for adding book
+        System.out.println("(7) Delete a book"); // leads to separate menu for deleting book
+        System.out.println("(8) Log Out"); // logs user out
+        System.out.println("(9) Exit"); // exits program
         handleAdminMainMenu();
     }
 
@@ -123,11 +125,12 @@ public class InputController {
 
     private void handleSearchMenu() throws SQLException, Exception {
         int choice = scanner.nextInt();
+        scanner.nextLine(); // consumes the new line character
         ModifyBooks modifyBooks = new ModifyBooks();
         List<Book> books;
         switch (choice) {
             case 1:
-                System.out.println("Enter book name: ");
+                System.out.println("Enter book name: ");    
                 String bookName = scanner.nextLine();
                 books = modifyBooks.getBookByName(bookName);
                 for (Book book : books) {
@@ -210,12 +213,18 @@ public class InputController {
         switch (choice) {
             case 1:
                 ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
+                modifyRentedBooks.createRentedBooksTable(); // create rented book table if necessary
                 ModifyBooks modifyBooks = new ModifyBooks();
-                List<RentedBook> rentedBooks = modifyRentedBooks.getRentedBooks(currentAccount.getAccountId());
-                System.out.println("Rented Books");
-                for (RentedBook rentedBook : rentedBooks) {
-                    Book book = modifyBooks.getBook(rentedBook.getBookID());
-                    System.out.println(book.getBookName());
+                modifyBooks.createBookTable(); // create book table if necessary
+                if (modifyRentedBooks.getRowCount("a_id", currentAccount.getAccountId().toString()) == 0) {
+                    System.out.println("No books have been checked out so far.");
+                } else {
+                    List<RentedBook> rentedBooks = modifyRentedBooks.getRentedBooks(currentAccount.getAccountId());
+                    System.out.println("Rented Books:");
+                    for (RentedBook rentedBook : rentedBooks) {
+                        Book book = modifyBooks.getBook(rentedBook.getBookID());
+                        System.out.println(book.toString());
+                    }
                 }
                 break;
             case 2:
@@ -225,19 +234,23 @@ public class InputController {
                 handleRentBookMenu();
                 break;
             case 4:
+                handleReturnBookMenu();
+                break;
+            case 5:
                 currentAccount = null;
                 loginMenu();
                 break;
-            case 5:
+            case 6:
                 System.exit(0);
                 break;
             default:
-                System.out.println("Invalid input, please provide an integer between 1 and 5.");
+                System.out.println("Invalid input, please provide an integer between 1 and 6.");
         }
     }
 
     private void handleAdminMainMenu() throws SQLException, Exception {
         int choice = scanner.nextInt();
+        scanner.nextLine(); // consumes next line
         switch (choice) {
             case 1:
                 ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
@@ -256,34 +269,47 @@ public class InputController {
                 handleRentBookMenu();
                 break;
             case 4:
-                adminAccountLookUpMenu();
+                handleReturnBookMenu();
                 break;
             case 5:
-                adminAddBookMenu();
+                adminAccountLookUpMenu();
                 break;
             case 6:
-                adminDeleteBookMenu();
+                adminAddBookMenu();
                 break;
             case 7:
+                adminDeleteBookMenu();
+                break;
+            case 8:
                 currentAccount = null;
                 loginMenu();
                 break;
-            case 8:
+            case 9:
                 System.exit(0);
                 break;
             default:
-                System.out.println("Invalid input, please provide an integer between 1 and 8.");
+                System.out.println("Invalid input, please provide an integer between 1 and 9.");
         }
     }
 
     private void handleRentBookMenu() throws SQLException, Exception {
+        ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
+        modifyRentedBooks.createRentedBooksTable(); // create rented book table if necessary
         System.out.println("Enter book ID: ");
         UUID bookId = UUID.fromString(scanner.nextLine());
         ModifyBooks modifyBooks = new ModifyBooks();
         Book book = modifyBooks.getBook(bookId);
-        ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
         LocalDate rentdate = modifyRentedBooks.rentBook(currentAccount, book);
         String path = System.getProperty("user.dir");
         System.out.println("Your receipt has been saved to: " + path + "/receipt.xml");
+    }
+
+    private void handleReturnBookMenu() throws SQLException, Exception {
+        scanner.nextLine(); // consumes the new line
+        System.out.println("Enter book ID: ");
+        UUID bookId = UUID.fromString(scanner.nextLine());
+        ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
+        ModifyBooks modifyBooks = new ModifyBooks();
+        modifyRentedBooks.returnBook(currentAccount.getAccountId(), bookId);
     }
 }
