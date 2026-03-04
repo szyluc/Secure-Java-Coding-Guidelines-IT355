@@ -127,6 +127,7 @@ public class InputController {
         System.out.println("(9) Help"); // displays helps information to user
         System.out.println("(10) Logout"); // logs user out
         System.out.println("(11) Exit"); // exits program
+        System.out.println(INPUT_LINES);
         handleAdminMainMenu();
     }
 
