@@ -1,6 +1,11 @@
 import java.time.LocalDate;
 import java.util.UUID;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
 /**
  * Represents a users account in the system, storing the accounts unique identifier
  * name, birthdate and role (member or admin)
@@ -9,11 +14,12 @@ import java.util.UUID;
  * This class provides the constructors to create new accounts or load existing one
  * Allows controlled access to account information through getters
  */
-public final class Account {
-    /**
-     * Unique identifier (UUID) for the account
-     * Value is imutable once the account is created
-     */
+    
+public class Account implements Serializable{
+/**
+   * Unique identifier (UUID) for the account
+   * Value is imutable once the account is created
+   */
     private final UUID accountId;
     /** Name for the account holder */
     private String accountHolderName;
@@ -154,5 +160,24 @@ public final class Account {
         this.accountHolderName = accountHolderName;
         this.accountHolderBirthDate = accountHolderBirthDate;
         this.accountHolderRole = accountHolderRole;
+    }
+
+    // SER04-J: Replicate constructor validation during serialization so that
+    // an attacker cannot craft a serialized byte stream that bypasses the
+    // checks normally enforced by the constructor.
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        validateAccountHolderName(this.accountHolderName);
+        validateAccountHolderBirthDate(this.accountHolderBirthDate);
+        validateAccountHolderRole(this.accountHolderRole);
+        out.defaultWriteObject();
+    }
+
+    // SER04-J: Re-run the same validation the constructor uses after
+    // deserialization, so a tampered object cannot survive the process.
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        validateAccountHolderName(this.accountHolderName);
+        validateAccountHolderBirthDate(this.accountHolderBirthDate);
+        validateAccountHolderRole(this.accountHolderRole);
     }
 }
