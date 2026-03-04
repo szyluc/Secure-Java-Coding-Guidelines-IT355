@@ -290,9 +290,11 @@ public class InputController {
                 break;
             case 6:
                 compareAccountsMenu();
+                userMainMenu();
                 break;
             case 7:
                 adminAddBookMenu();
+                userMainMenu();
                 break;
             case 8:
                 adminDeleteBookMenu();
@@ -306,10 +308,7 @@ public class InputController {
                 loginMenu();
                 break;
             case 11:
-                System.exit(0);
-                break;
-            default:
-                System.out.println("Invalid input, please provide an integer between 1 and 11.");
+                return;
         }
     }
 
