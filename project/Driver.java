@@ -8,16 +8,35 @@ public class Driver {
         ModifyAccounts accounts = new ModifyAccounts();
         File booksXML = new File("./books.xml");
         File adminsXML = new File("./admins.xml");
+
+         // Rule TH100-J – Background XML import thread and menu
+        Thread importThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    books.importBooks(booksXML); // import pre-specified books
+                    accounts.importAdmins(adminsXML); // import pre-specified admins
+                } catch (SQLException sqlE) {
+                    sqlE.printStackTrace();
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+         // Use thread.start() instead of run before menu starts
+        importThread.start();
+        
         try {
-            books.importBooks(booksXML); // import pre-specified books
-            accounts.importAdmins(adminsXML); // import pre-specified admins (librarians)
             inputController.startMenu();
-			inputController.loginMenu();
+            inputController.loginMenu();
             inputController.userMainMenu();
-		} catch (SQLException sqlE) {
-			sqlE.printStackTrace();
-		} catch (Exception e) {
+        } catch (SQLException sqlE) {
+            sqlE.printStackTrace();
+        } catch (Exception e) {
             e.printStackTrace();
         }
+        
+        
     }
 }
