@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.UUID;
 
 import java.io.Closeable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 // MET12-J: Implements Closeable so the caller can explicitly release
 // resources with close() rather than a finalizer.

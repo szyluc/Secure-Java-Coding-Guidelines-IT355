@@ -28,6 +28,8 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.w3c.dom.Element;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class extends DatabaseController and simplifies the calls.

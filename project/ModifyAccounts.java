@@ -31,6 +31,8 @@ import org.w3c.dom.Element;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ModifyAccounts extends DatabaseController {
     private final String ACCOUNT_DB = """

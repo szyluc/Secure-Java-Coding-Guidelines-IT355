@@ -1,5 +1,6 @@
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.logging.FileHandler;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.Normalizer;
@@ -14,6 +15,7 @@ import java.util.Scanner;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class InputController {
     private static final String NUM_INPUT_PROVIDE = "Please provide your input: ";
@@ -25,7 +27,20 @@ public class InputController {
     private static final String UUID_BOOK_DELETE_PROVIDE = "Please enter your book's ID to delete: ";
     private static final String INPUT_LINES = "----------------";
 
-    private static final Logger logger = Logger.getLogger(InputController.class.getName());
+    private static final Logger logger = Logger.getLogger("InputControllerLogger");
+    FileHandler fh;
+
+    try {
+        fh = new FileHandler("./logs/InputController.log");
+        logger.addHandler(fh);
+        SimpleFormatter formatter = new SimpleFormatter();
+        fh.setFormatter(formatter);
+    } catch (SecurityException e) {
+        System.out.println("SecurityException caught");
+    } catch (IOException e) {
+        System.out.println("IOException caught");
+    }
+
     /**
      * Options:
      * 1) Login
@@ -354,7 +369,7 @@ public class InputController {
                     invalidInput = false;
                 }
             } catch (InputMismatchException e) {
-                logger.log(Level.SEVERE, "Invalid input.", e);
+                logger.log(Level.WARNING, "Invalid input.", e);
                 System.out.println(invalidInputEnter(maxVal));
                 System.out.print(NUM_INPUT_PROVIDE);
             } finally {
