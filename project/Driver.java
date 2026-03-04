@@ -24,6 +24,9 @@ public class Driver {
             }
         });
 
+         // Use thread.start() instead of run before menu starts
+        importThread.start();
+        
         try {
             inputController.startMenu();
             inputController.loginMenu();
@@ -34,9 +37,6 @@ public class Driver {
             e.printStackTrace();
         }
         
-
-        // Use thread.start() instead of run
-        importThread.start();
         
     }
 }
