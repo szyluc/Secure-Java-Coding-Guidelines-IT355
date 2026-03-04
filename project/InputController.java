@@ -133,6 +133,9 @@ public class InputController {
                 System.out.println("Enter book name: ");    
                 String bookName = scanner.nextLine();
                 books = modifyBooks.getBookByName(bookName);
+                if(books.isEmpty()){
+                    System.out.println("No books found with that name.");
+                }
                 for (Book book : books) {
                     System.out.println("ID: " + book.getBookId());
                     System.out.println("Name: " + book.getBookName());
@@ -144,6 +147,9 @@ public class InputController {
                 System.out.println("Enter book author: ");
                 String bookAuthor = scanner.nextLine();
                 books = modifyBooks.getBookByAuthor(bookAuthor);
+                if(books.isEmpty()){
+                    System.out.println("No books found by that author.");
+                }
                 for (Book book : books) {
                     System.out.println("ID: " + book.getBookId());
                     System.out.println("Name: " + book.getBookName());
@@ -155,6 +161,9 @@ public class InputController {
                 System.out.println("Enter book genre: ");
                 String bookGenre = scanner.nextLine();
                 books = modifyBooks.getBookByGenre(bookGenre);
+                if(books.isEmpty()){
+                    System.out.println("No books found in that genre.");
+                }
                 for (Book book : books) {
                     System.out.println("ID: " + book.getBookId());
                     System.out.println("Name: " + book.getBookName());
