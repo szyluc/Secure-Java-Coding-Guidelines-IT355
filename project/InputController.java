@@ -1,9 +1,17 @@
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
+
 public class InputController {
+    private static final String NUM_INPUT_PROVIDE = "Please provide your input: ";
+    private static final String UUID_INPUT_PROVIDE = "Please enter your account ID: ";
+    private static final String NAME_INPUT_PROVIDE = "Please enter your name: ";
+    private static final String DATE_INPUT_PROVIDE = "Please enter your birthdate (YYYY-MM-DD): ";
+    private static final String INPUT_LINES = "----------------";
     /**
      * Options:
      * 1) Login
@@ -27,15 +35,16 @@ public class InputController {
     Account currentAccount;
 
     public void startMenu() {
-        System.out.println("Welcome to the ISU Library!");
-        System.out.println("----------");
+        System.out.println("\nWelcome to the ISU Library!\n");
     }
     
     public void loginMenu() throws SQLException {
+        System.out.println(INPUT_LINES);
         System.out.println("(1) Log In"); // leads to log in through UUID
         System.out.println("(2) Create Account"); // leads to account creation
         System.out.println("(3) Exit"); // exits program
-        handleLogin();
+        System.out.println(INPUT_LINES + "\n");
+        handleLogin(); // with the way it is implemented, handleLogin() should be recursive
     }
 
     public void userMainMenu() throws SQLException, Exception {
@@ -50,13 +59,45 @@ public class InputController {
         }
     }
 
+    private void handleLogin() throws SQLException {
+        ModifyAccounts modifyAccounts = new ModifyAccounts();
+        int choice = numericInputValidation(3);
+        scanner.nextLine();  // We need to consume the "\n" character after reading a number
+        switch (choice) {
+            case 1: // LOGIN
+                System.out.print(UUID_INPUT_PROVIDE);
+                UUID id = uuidInputValidation();
+                currentAccount = modifyAccounts.getAccount(id);
+                break;
+            case 2: // CREATE ACCOUNT
+                
+                String name = stringInputValidation(NAME_INPUT_PROVIDE);
+                System.out.print(DATE_INPUT_PROVIDE);
+                LocalDate birthdate = dateInputValidation();
+                Account newAccount = new Account(name, birthdate, Role.MEMBER);
+                modifyAccounts.addAccount(newAccount);
+                currentAccount = newAccount; // current user is the newly made account.
+                System.out.println("\nYour account ID:" + currentAccount.getAccountId());
+                System.out.println("Important! Store this ID in a secure place for future logins.");
+                break;
+            case 3: //
+                System.exit(0);
+                break;
+            default:
+                break; // this statement will never be reached as inputvalidate handles it
+        }
+    }
+
     private void memberMainMenu() throws SQLException, Exception {
+        System.out.println("\n" + INPUT_LINES);
+        System.out.println("Welcome, " + currentAccount.getAccountHolderName() + "!\n");
         System.out.println("(1) View Account "); // leads to display of any books currently checked out
         System.out.println("(2) Search for a book"); // leads to separate menu for book search
         System.out.println("(3) Rent a book"); // leads user to menu for renting book
         System.out.println("(4) Return a book"); // leads user to menu for returning book
         System.out.println("(5) Log Out"); // logs user out
         System.out.println("(6) Exit"); // exits program
+        System.out.println(INPUT_LINES);
         handleUserMainMenu();
     }
 
@@ -176,40 +217,8 @@ public class InputController {
         }
     }
 
-    private void handleLogin() throws SQLException {
-        ModifyAccounts modifyAccounts = new ModifyAccounts();
-        int choice = scanner.nextInt();
-        // We need to consume the "\n" character after reading a number
-        scanner.nextLine();
-        switch (choice) {
-            case 1:
-                System.out.println("Enter Account ID: ");
-                UUID id = UUID.fromString(scanner.nextLine());
-                
-                currentAccount = modifyAccounts.getAccount(id);
-                break;
-            case 2:
-                System.out.println("Enter Account Name: ");
-                String name = scanner.nextLine();
-                System.out.println("Enter Account Birth Date (YYYY-MM-DD): ");
-                String birthDate = scanner.nextLine();
-                LocalDate date = LocalDate.parse(birthDate);
-                Account newAccount = new Account(name, date, Role.MEMBER);
-                modifyAccounts.addAccount(newAccount);
-                currentAccount = newAccount;
-                System.out.println("Account ID:" + currentAccount.getAccountId());
-                System.out.println("Store this ID some secure for future logins.");
-                break;
-            case 3:
-                System.exit(0);
-                break;
-            default:
-                System.out.println("Invalid input, please provide an integer between 1 and 3.");
-        }
-    }
-
     private void handleUserMainMenu() throws SQLException, Exception {
-        int choice = scanner.nextInt();
+        int choice = numericInputValidation(6);
         switch (choice) {
             case 1:
                 ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
@@ -217,10 +226,10 @@ public class InputController {
                 ModifyBooks modifyBooks = new ModifyBooks();
                 modifyBooks.createBookTable(); // create book table if necessary
                 if (modifyRentedBooks.getRowCount("a_id", currentAccount.getAccountId().toString()) == 0) {
-                    System.out.println("No books have been checked out so far.");
+                    System.out.println("\nYou do not have any books checked out.");
                 } else {
                     List<RentedBook> rentedBooks = modifyRentedBooks.getRentedBooks(currentAccount.getAccountId());
-                    System.out.println("Rented Books:");
+                    System.out.println("\nRented Books:");
                     for (RentedBook rentedBook : rentedBooks) {
                         Book book = modifyBooks.getBook(rentedBook.getBookID());
                         System.out.println(book.toString());
@@ -244,7 +253,7 @@ public class InputController {
                 System.exit(0);
                 break;
             default:
-                System.out.println("Invalid input, please provide an integer between 1 and 6.");
+                break; // with the input validation this should never be reached.
         }
     }
 
@@ -311,5 +320,83 @@ public class InputController {
         ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
         ModifyBooks modifyBooks = new ModifyBooks();
         modifyRentedBooks.returnBook(currentAccount.getAccountId(), bookId);
+    }
+
+    private int numericInputValidation(int maxVal) {
+        System.out.print(NUM_INPUT_PROVIDE);
+        int choice = 0; // automatically out of range
+        boolean invalidInput = true;
+        while (invalidInput) {
+            try {
+                choice = scanner.nextInt();
+                if (choice < 1 || choice > maxVal) {
+                    System.out.println(invalidInputEnter(maxVal));
+                    System.out.print(NUM_INPUT_PROVIDE);
+                } else {
+                    // if we get here, we have a good number!
+                    invalidInput = false;
+                }
+            } catch (InputMismatchException e) {
+                System.out.println(invalidInputEnter(maxVal));
+                System.out.print(NUM_INPUT_PROVIDE);
+            }
+        }
+        return choice;     
+    }
+
+    private UUID uuidInputValidation() {
+        String stringResult = null;
+        UUID uuidResult = null;
+        boolean invalidInput = true;
+        while (invalidInput) {
+            try {
+                stringResult = scanner.nextLine();
+                uuidResult = UUID.fromString(stringResult);
+                // if we make it past this step, we have valid UUID!
+                invalidInput = false;
+            } catch (IllegalArgumentException e) {
+                System.out.println("Invalid input. Please enter a valid UUID.");
+                System.out.print(UUID_INPUT_PROVIDE);
+            }
+        }
+        return uuidResult;
+    }
+
+    private LocalDate dateInputValidation() {
+        String stringResult = null;
+        LocalDate dateResult = null;
+        boolean invalidInput = true;
+        while (invalidInput) {
+            try {
+                stringResult = scanner.nextLine();
+                dateResult = LocalDate.parse(stringResult);
+                // if we make it past this step, we have a valid date!
+                invalidInput = false;
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid input. Please enter a valid date.");
+                System.out.print(DATE_INPUT_PROVIDE);
+            }
+        }
+        return dateResult;
+    }
+
+    private String stringInputValidation(String askingArgument) {
+        String stringResult = null;
+        boolean invalidInput = true;
+        while (invalidInput) {
+            System.out.print(askingArgument);
+            stringResult = scanner.nextLine();
+            if (stringResult == null || stringResult.isEmpty() || stringResult.isBlank()) {
+                System.out.println("Invalid input. Please enter a valid string.");
+                System.out.print(askingArgument);
+            } else {
+                invalidInput = false;
+            }
+        }
+        return stringResult;
+    }
+
+    private String invalidInputEnter(int maxValue) {
+        return "Invalid input. Please enter an integer betweeen 1 and " + maxValue + ".";
     }
 }

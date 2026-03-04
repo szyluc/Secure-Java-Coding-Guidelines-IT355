@@ -33,7 +33,7 @@ public class Book {
     }
 
     public String toString() {
-        return bookID + ": " + bookName + " by " + bookAuthor + ". Category: " + bookCategory  + ".";
+        return bookID + " | " + bookName + ", by " + bookAuthor + ". Category: " + bookCategory + ".";
     }
 
     private void setBookDetails(String bookName, String bookAuthor, String bookCategory) {
