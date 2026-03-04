@@ -11,6 +11,9 @@ public class InputController {
     private static final String UUID_INPUT_PROVIDE = "Please enter your account ID: ";
     private static final String NAME_INPUT_PROVIDE = "Please enter your name: ";
     private static final String DATE_INPUT_PROVIDE = "Please enter your birthdate (YYYY-MM-DD): ";
+    private static final String UUID_BOOK_RENT_PROVIDE = "Please enter your book's ID to rent: ";
+    private static final String UUID_BOOK_RETURN_PROVIDE = "Please enter your book's ID to return: ";
+    private static final String UUID_BOOK_DELETE_PROVIDE = "Please enter your book's ID to delete: ";
     private static final String INPUT_LINES = "----------------";
     /**
      * Options:
@@ -62,11 +65,9 @@ public class InputController {
     private void handleLogin() throws SQLException {
         ModifyAccounts modifyAccounts = new ModifyAccounts();
         int choice = numericInputValidation(3);
-        scanner.nextLine();  // We need to consume the "\n" character after reading a number
         switch (choice) {
             case 1: // LOGIN
-                System.out.print(UUID_INPUT_PROVIDE);
-                UUID id = uuidInputValidation();
+                UUID id = uuidInputValidation(UUID_INPUT_PROVIDE);
                 currentAccount = modifyAccounts.getAccount(id);
                 break;
             case 2: // CREATE ACCOUNT
@@ -77,7 +78,7 @@ public class InputController {
                 Account newAccount = new Account(name, birthdate, Role.MEMBER);
                 modifyAccounts.addAccount(newAccount);
                 currentAccount = newAccount; // current user is the newly made account.
-                System.out.println("\nYour account ID:" + currentAccount.getAccountId());
+                System.out.println("\nYour account ID: " + currentAccount.getAccountId());
                 System.out.println("Important! Store this ID in a secure place for future logins.");
                 break;
             case 3: //
@@ -152,8 +153,8 @@ public class InputController {
     }
 
     private void adminDeleteBookMenu() throws SQLException, Exception {
-        System.out.println("Enter book ID: ");
-        UUID bookId = UUID.fromString(scanner.nextLine());
+        System.out.println(UUID_BOOK_DELETE_PROVIDE);
+        UUID bookId = uuidInputValidation(UUID_BOOK_DELETE_PROVIDE);
         ModifyBooks modifyBooks = new ModifyBooks();
         Book bookToDelete = modifyBooks.getBook(bookId);
         modifyBooks.removeBook(bookToDelete.getBookId());
@@ -301,25 +302,67 @@ public class InputController {
         }
     }
 
+    private UUID bookNotTakenValidation(ModifyRentedBooks rentedBooks, ModifyBooks books) throws SQLException {
+        boolean invalidId = true;
+        UUID bookId = null;
+
+        while (invalidId) {
+            bookId = uuidInputValidation(UUID_BOOK_RETURN_PROVIDE);
+            if (books.getRowCount("book_id", bookId.toString()) == 0) {
+                System.out.println("This book ID does not exist. Please try again.");
+            } else if ((rentedBooks.getRowCount("b_id", bookId.toString()) == 0)) {
+                System.out.println("This book ID is not rented out. Please try again.");
+            } else {
+                invalidId = false;
+            }
+        }
+        return bookId;
+    }
+
+    private UUID bookTakenValidation(ModifyRentedBooks rentedBooks, ModifyBooks books) throws SQLException {
+        // checks if the passed book is either (1) currently rented or (2) does not exist
+        boolean invalidId = true;
+        UUID bookId = null;
+        // first, we must validate the UUID input.
+        while (invalidId) {
+            bookId = uuidInputValidation(UUID_BOOK_RENT_PROVIDE);
+            if ((rentedBooks.getRowCount("b_id", bookId.toString())) > 0) {
+                System.out.println("This book ID is currently rented out. Please try again.");
+            } else if (books.getRowCount("book_id", bookId.toString()) == 0) {
+                System.out.println("This book ID does not exist. Please try again.");
+            } else {
+                invalidId = false;
+            }
+        }
+        return bookId;
+    }
+
     private void handleRentBookMenu() throws SQLException, Exception {
         ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
-        modifyRentedBooks.createRentedBooksTable(); // create rented book table if necessary
-        System.out.println("Enter book ID: ");
-        UUID bookId = UUID.fromString(scanner.nextLine());
         ModifyBooks modifyBooks = new ModifyBooks();
+
+        modifyRentedBooks.createRentedBooksTable(); // create rented book table if necessary
+
+        UUID bookId = bookTakenValidation(modifyRentedBooks, modifyBooks); 
+
         Book book = modifyBooks.getBook(bookId);
-        LocalDate rentdate = modifyRentedBooks.rentBook(currentAccount, book);
+        LocalDate nowDate = modifyRentedBooks.rentBook(currentAccount, book); // rents the book and makes the receipt
         String path = System.getProperty("user.dir");
-        System.out.println("Your receipt has been saved to: " + path + "/receipt.xml");
+
+        System.out.println("\nYou have successfully checked out: " + book.transactionString());
+        System.out.println("Your receipt has been saved to: " + path + "/receipts/" + nowDate.toString() + ".xml");
     }
 
     private void handleReturnBookMenu() throws SQLException, Exception {
-        scanner.nextLine(); // consumes the new line
-        System.out.println("Enter book ID: ");
-        UUID bookId = UUID.fromString(scanner.nextLine());
         ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
         ModifyBooks modifyBooks = new ModifyBooks();
+
+        UUID bookId = bookNotTakenValidation(modifyRentedBooks, modifyBooks);
+
+        Book book = modifyBooks.getBook(bookId);
         modifyRentedBooks.returnBook(currentAccount.getAccountId(), bookId);
+
+        System.out.println("\nYou have successfully returned: " + book.transactionString());
     }
 
     private int numericInputValidation(int maxVal) {
@@ -339,24 +382,27 @@ public class InputController {
             } catch (InputMismatchException e) {
                 System.out.println(invalidInputEnter(maxVal));
                 System.out.print(NUM_INPUT_PROVIDE);
+            } finally {
+                scanner.nextLine(); // consume new line character
             }
         }
         return choice;     
     }
 
-    private UUID uuidInputValidation() {
+    private UUID uuidInputValidation(String askingArgument) {
         String stringResult = null;
         UUID uuidResult = null;
         boolean invalidInput = true;
         while (invalidInput) {
             try {
+                System.out.print(askingArgument);
                 stringResult = scanner.nextLine();
                 uuidResult = UUID.fromString(stringResult);
                 // if we make it past this step, we have valid UUID!
                 invalidInput = false;
             } catch (IllegalArgumentException e) {
-                System.out.println("Invalid input. Please enter a valid UUID.");
-                System.out.print(UUID_INPUT_PROVIDE);
+                System.out.println("Invalid input. Please enter a valid ID.");
+                System.out.print(askingArgument);
             }
         }
         return uuidResult;
