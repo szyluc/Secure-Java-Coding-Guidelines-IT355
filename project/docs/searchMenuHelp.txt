@@ -1,0 +1,5 @@
+Search by book name: Allows you to find books by providing a name
+Search by book author: Allows you to find books by providing an author
+Search by book genre: Allows you to find books by providing a genre
+Help: Displays some information about the commands in the menu
+Back: Opens the main menu of the application again

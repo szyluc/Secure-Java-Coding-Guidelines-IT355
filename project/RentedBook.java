@@ -2,7 +2,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 public class RentedBook {
-    private UUID bookID;
+    private final UUID bookID;
     private UUID accountID;
     private LocalDate dateRented;
 

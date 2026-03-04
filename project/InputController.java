@@ -1,3 +1,6 @@
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -45,7 +48,8 @@ public class InputController {
         System.out.println(INPUT_LINES);
         System.out.println("(1) Log In"); // leads to log in through UUID
         System.out.println("(2) Create Account"); // leads to account creation
-        System.out.println("(3) Exit"); // exits program
+        System.out.println("(3) Help"); // exits program
+        System.out.println("(4) Exit"); // exits program
         System.out.println(INPUT_LINES + "\n");
         handleLogin(); // with the way it is implemented, handleLogin() should be recursive
     }
@@ -81,7 +85,11 @@ public class InputController {
                 System.out.println("\nYour account ID: " + currentAccount.getAccountId());
                 System.out.println("Important! Store this ID in a secure place for future logins.");
                 break;
-            case 3: //
+            case 3: // HELP
+                readHelpInfo("./docs/loginMenuHelp.txt");
+                loginMenu();
+                break;
+            case 4: // EXIT
                 System.exit(0);
                 break;
             default:
@@ -96,22 +104,24 @@ public class InputController {
         System.out.println("(2) Search for a book"); // leads to separate menu for book search
         System.out.println("(3) Rent a book"); // leads user to menu for renting book
         System.out.println("(4) Return a book"); // leads user to menu for returning book
-        System.out.println("(5) Log Out"); // logs user out
-        System.out.println("(6) Exit"); // exits program
+        System.out.println("(5) Help"); // displays helps information to user
+        System.out.println("(6) Log Out"); // logs user out
+        System.out.println("(7) Exit"); // exits program
         System.out.println(INPUT_LINES);
         handleUserMainMenu();
     }
 
     private void adminMainMenu() throws SQLException, Exception {
-        System.out.println("(1) View Account "); // leads to display of any books currently checked out
+        System.out.println("(1) View account "); // leads to display of any books currently checked out
         System.out.println("(2) Search for a book"); // leads to separate menu for book search
         System.out.println("(3) Rent a book"); // leads user to menu for renting book
         System.out.println("(4) Return a book"); // leads user to menu for returning book
         System.out.println("(5) Look up another account"); // leads to separate menu for UUID search
         System.out.println("(6) Add a book"); // leads to separate menu for adding book
         System.out.println("(7) Delete a book"); // leads to separate menu for deleting book
-        System.out.println("(8) Log Out"); // logs user out
-        System.out.println("(9) Exit"); // exits program
+        System.out.println("(8) Help"); // displays helps information to user
+        System.out.println("(9) Logout"); // logs user out
+        System.out.println("(10) Exit"); // exits program
         handleAdminMainMenu();
     }
 
@@ -120,7 +130,8 @@ public class InputController {
         System.out.println("(1) Search by book name");
         System.out.println("(2) Search by book author");
         System.out.println("(3) Search by book genre");
-        System.out.println("(4) Return to main menu");
+        System.out.println("(4) Help");
+        System.out.println("(5) Back");
         handleSearchMenu();
     }
 
@@ -175,6 +186,9 @@ public class InputController {
                 System.out.println("Enter book name: ");    
                 String bookName = scanner.nextLine();
                 books = modifyBooks.getBookByName(bookName);
+                if(books.isEmpty()){
+                    System.out.println("No books found with that name.");
+                }
                 for (Book book : books) {
                     System.out.println("ID: " + book.getBookId());
                     System.out.println("Name: " + book.getBookName());
@@ -186,6 +200,9 @@ public class InputController {
                 System.out.println("Enter book author: ");
                 String bookAuthor = scanner.nextLine();
                 books = modifyBooks.getBookByAuthor(bookAuthor);
+                if(books.isEmpty()){
+                    System.out.println("No books found by that author.");
+                }
                 for (Book book : books) {
                     System.out.println("ID: " + book.getBookId());
                     System.out.println("Name: " + book.getBookName());
@@ -197,6 +214,9 @@ public class InputController {
                 System.out.println("Enter book genre: ");
                 String bookGenre = scanner.nextLine();
                 books = modifyBooks.getBookByGenre(bookGenre);
+                if(books.isEmpty()){
+                    System.out.println("No books found in that genre.");
+                }
                 for (Book book : books) {
                     System.out.println("ID: " + book.getBookId());
                     System.out.println("Name: " + book.getBookName());
@@ -205,6 +225,10 @@ public class InputController {
                 }
                 break;
             case 4:
+                readHelpInfo("./docs/searchMenuHelp.txt");
+                searchMenu();
+                break;
+            case 5:
                 Role role = currentAccount.getAccountHolderRole();
                 boolean isAdmin = role == Role.ADMIN;
                 if (isAdmin) {
@@ -214,7 +238,7 @@ public class InputController {
                 }
                 break;
             default:
-                System.out.println("Invalid input, please provide an integer between 1 and 4.");
+                System.out.println("Invalid input, please provide an integer between 1 and 5.");
         }
     }
 
@@ -247,10 +271,14 @@ public class InputController {
                 handleReturnBookMenu();
                 break;
             case 5:
+                readHelpInfo("./docs/memberMenuHelp.txt");
+                memberMainMenu();
+                break;
+            case 6:
                 currentAccount = null;
                 loginMenu();
                 break;
-            case 6:
+            case 7:
                 System.exit(0);
                 break;
             default:
@@ -291,14 +319,18 @@ public class InputController {
                 adminDeleteBookMenu();
                 break;
             case 8:
+                readHelpInfo("./docs/adminMenuHelp.txt");
+                adminMainMenu();
+                break;
+            case 9:
                 currentAccount = null;
                 loginMenu();
                 break;
-            case 9:
+            case 10:
                 System.exit(0);
                 break;
             default:
-                System.out.println("Invalid input, please provide an integer between 1 and 9.");
+                System.out.println("Invalid input, please provide an integer between 1 and 10.");
         }
     }
 
@@ -459,5 +491,21 @@ public class InputController {
 
     private String invalidInputEnter(int maxValue) {
         return "Invalid input. Please enter an integer betweeen 1 and " + maxValue + ".";
+    }
+
+    private void readHelpInfo(String filePath) {
+        try {
+            FileReader fileReader = new FileReader(filePath);
+            int buffer;
+            char data;
+            while ((buffer = fileReader.read()) != -1) {
+                data = (char) buffer;
+                System.out.print(data);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

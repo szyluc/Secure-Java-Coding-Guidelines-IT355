@@ -1,0 +1,4 @@
+Login: Allows you to login to an existing account using the UUID provided when the account was created
+Create account: Allows you to create a new account for this application by providing your name and date of birth
+Help: Displays some information about the commands in the menu
+Exit: Terminates the program when requested
