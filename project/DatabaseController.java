@@ -4,10 +4,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Element;
@@ -25,7 +21,7 @@ public abstract class DatabaseController {
     protected Connection connection;
     /**
      * Constructs DatabaseController with specific database name
-     * @param databaseName the name fo database file
+     * @param databaseName the name of database file
      * @throws IllegalArgumentException if database is invalid
      */
     public DatabaseController(String databaseName) {
@@ -50,7 +46,7 @@ public abstract class DatabaseController {
     }
     /**
      * Closes active database connection if exist
-     * @return true if connection successfully closed, false if no connection exists
+     * @return true if connection successfully closed, false if non active connective cannot be closed
      * @throws SQLException is database access error occurs
      */
     public boolean closeConnection() throws SQLException {
