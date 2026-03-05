@@ -17,19 +17,29 @@
 class UserProfile implements Cloneable {
     private String username;
     private int[] permissions;
-
+    /**
+    * A constructor for a UserProfile object
+    * @param username which is the username associated with the account
+    * @param permissions is the permissions that this UserProfile has
+    */
     UserProfile(String username, int[] permissions) {
         this.username = username;
         this.permissions = permissions;
     }
-
+    /**
+    * An overrided clone method for cloning an object
+    * @throws CloneNotSupportedException if this object doesn't allow clones
+    * @return a new Object object
+    */
     @Override
     public Object clone() throws CloneNotSupportedException {
         UserProfile clone = (UserProfile) super.clone();
         clone.copyPermissions();
         return clone;
     }
-
+    /**
+    * a method that cannot be modified, allows permissions to be copied to the copied object.
+    */
     final void copyPermissions() {
         if (permissions != null) {
             int[] copy = new int[permissions.length];
@@ -40,8 +50,12 @@ class UserProfile implements Cloneable {
         }
     }
 
+    /**
+    * A final method that can initialize defaults for a copied object
+    */
     final void initializeDefaults() {
         //initialize default values
     }
 }
+
 
