@@ -31,8 +31,10 @@ import org.w3c.dom.Element;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class ModifyAccounts extends DatabaseController {
     private final String ACCOUNT_DB = """
@@ -51,10 +53,39 @@ public class ModifyAccounts extends DatabaseController {
 
     private static final String ACCOUNT_EXISTS = "SELECT name FROM sqlite_master WHERE type='table' AND name = ?";
 
+    private static final Logger logger = Logger.getLogger("ModifyAccountsLogger");
+    FileHandler fh;
+
+    /**
+     * A method to initialize the log file
+     */
+    public void init() {
+        try {
+            fh = new FileHandler("./logs/ModifyAccounts.log");
+            logger.addHandler(fh);
+            SimpleFormatter formatter = new SimpleFormatter();
+            fh.setFormatter(formatter);
+            logger.setUseParentHandlers(false);
+        } catch (SecurityException e) {
+            System.out.println("SecurityException caught");
+        } catch (IOException e) {
+            System.out.println("IOException caught");
+        }
+    }
+
+    /**
+     * The ModifyAccounts constructor which calls the DatabaseController constructor with the account database name
+     */
     public ModifyAccounts() {
         super(ACCOUNT_DB_NAME);
     }
 
+    /**
+     * A method that creates the account table
+     * 
+     * @throws Exception if an error occurs during execution
+     * @throws SQLException if an error occurs while closing the connection
+     */
     public void createAccountTable() throws Exception {
         openConnection();
         Statement createAccountDB = connection.createStatement();
@@ -65,18 +96,27 @@ public class ModifyAccounts extends DatabaseController {
                 createAccountDB.close();
                 closeConnection();
             } catch (SQLException e) {
+                logger.log(Level.WARNING, "Exception caught during account creation.", e);
                 System.out.println("SQLException caught.");
             }
         }
     }
 
+    /**
+     * A method to add an account to the database
+     * 
+     * @param account is the new account object that we want to add to the database
+     * @throws SQLException if a SQL error occurs during execution, also is thrown if an error occurs while closing connection
+     * @return if the account add was successful
+     */
     public boolean addAccount(Account account) throws SQLException {
         if (account == null) {
             return false; // account add failed
         }
         openConnection();
         // Then, add an account to the database.
-        String addAccountString = "INSERT INTO " + ACCOUNT_DB_NAME + " (account_id, account_name, account_dob, account_role) VALUES (?, ?, ?, ?);";
+        String addAccountString = "INSERT INTO " + ACCOUNT_DB_NAME
+                + " (account_id, account_name, account_dob, account_role) VALUES (?, ?, ?, ?);";
 
         // RULE: Avoid SQL injection.
         PreparedStatement addAccountToDB = connection.prepareStatement(addAccountString);
@@ -94,11 +134,19 @@ public class ModifyAccounts extends DatabaseController {
                 addAccountToDB.close();
                 closeConnection();
             } catch (SQLException e) {
+                logger.log(Level.WARNING, "Exception caught for adding account.", e);
                 System.out.println("SQLException caught.");
             }
         }
     }
 
+    /**
+     * A method to remove an account from the database
+     * 
+     * @param accountID is the unique ID of the account that we want removed from the database
+     * @throws SQLException if a SQL error occurs during execution, also is thrown if an error occurs while closing connection
+     * @return if the removal was successful
+     */
     public boolean removeAccount(UUID accountID) throws SQLException {
         // Create table if necessary? Should not have to create DB to remove (remove 0 user)
         if (accountID == null) {
@@ -134,11 +182,18 @@ public class ModifyAccounts extends DatabaseController {
                 removeAccountFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
+                logger.log(Level.WARNING, "Exception caught for removing account.", e);
                 System.out.println("SQLException caught.");
             }
         }
     }
 
+    /**
+     * A method to return an Account object if it exists
+     * 
+     * @param accountID is the unique ID of the account object we want to retrieve
+     * @throws SQLException if a SQL error occurs during execution, also is thrown if an error occurs while closing connection
+     */
     public Account getAccount(UUID accountID) throws SQLException {
         // Check that account exists
         if (accountID == null) {
@@ -175,12 +230,29 @@ public class ModifyAccounts extends DatabaseController {
                 closeConnection();
                 
             } catch (SQLException e) {
+                logger.log(Level.WARNING, "Exception caught for getting account.", e);
                 System.out.println("SQLException caught.");
             }
         }
     }
 
+    /**
+     * A method to import the admin accounts from an xmlFile
+     * 
+     * @param xmlFile is the xmlFile that contains the admin account credentials to import
+     * @throws SQLException if while closing the connection, an error occurs
+     * @throws IOException if the provided xml file cannot be parsed or validated
+     * @throws IllegalArgumentException if the provided file is not a file
+     * @throws IllegalAccessException if the xmlFile provided is not found in the project files
+     * @throws Exception if an error occurs while executing
+     * @throws SAXException if an error occurs while parsing the xml file
+     */
     public void importAdmins(File xmlFile) throws Exception {
+        if (xmlFile == null || !xmlFile.exists()) {
+            throw new IllegalAccessException("Xml file not found");
+        } else if (!xmlFile.isFile()) {
+            throw new IllegalArgumentException("Invalid XML File");
+        }
         openConnection();
         PreparedStatement ifAccountDBExists = connection.prepareStatement(ACCOUNT_EXISTS);
 
@@ -188,16 +260,18 @@ public class ModifyAccounts extends DatabaseController {
             ifAccountDBExists.setString(1, ACCOUNT_DB_NAME);
             ResultSet resultSet = ifAccountDBExists.executeQuery();
 
-            if (!resultSet.next()) {
+            if (resultSet.next()) {
                 InputSource xmlStream = new InputSource(new File("admins.xml").getAbsolutePath());
                 SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
                 DefaultHandler defaultHandler = new DefaultHandler() {
                     public void warning(SAXParseException e) throws SAXException {
                         throw e;
                     }
+
                     public void error(SAXParseException e) throws SAXException {
                         throw e;
                     }
+
                     public void fatalError(SAXParseException e) throws SAXException {
                         throw e;
                     }
@@ -212,27 +286,40 @@ public class ModifyAccounts extends DatabaseController {
                     xmlReader.setEntityResolver(new CustomResolver());
                     saxParser.parse(xmlStream, defaultHandler);
                 } catch (ParserConfigurationException e) {
+                    logger.log(Level.WARNING, "Exception caught while validating admin XML.", e);
                     throw new IOException("Unable to validate XML", e);
                 } catch (SAXException e) {
+                    logger.log(Level.WARNING, "Exception caught while importing admin XML.", e);
                     throw new IOException("Invalid XML", e);
                 }
-
+                // SER08-J: Rather than using deprecated AccessControlContext to restrict
+                // privileges during parsing, we can configure the XML parser itself to prevent it
+                // from accessing external resources or executing malicious content.
                 DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                // Prevent external DTDs which prevents XXE attacks
+                factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+                // Prevent external general entities
+                factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+                // Prevent external parameter entities
+                factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+                // Prevent external DTD loading
+                factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+                factory.setXIncludeAware(false);
+                factory.setExpandEntityReferences(false);
                 DocumentBuilder builder = factory.newDocumentBuilder();
                 Document document = builder.parse(xmlFile);
 
                 List<Account> accountsToAdd = new ArrayList<>();
                 NodeList accountsNodeList = document.getElementsByTagName("admin");
-                for (int i=0; i<accountsNodeList.getLength(); i++) {
+                for (int i = 0; i < accountsNodeList.getLength(); i++) {
                     Node curAccountNode = accountsNodeList.item(i);
                     if (curAccountNode.getNodeType() == Node.ELEMENT_NODE) {
                         Element accountElement = (Element) curAccountNode;
                         Account curAccount = new Account(
-                            UUID.fromString(getTagValue("id", accountElement)),
-                            getTagValue("name", accountElement),
-                            LocalDate.parse(getTagValue("date", accountElement)),
-                            Role.valueOf(getTagValue("role", accountElement))
-                        );
+                                UUID.fromString(getTagValue("id", accountElement)),
+                                getTagValue("name", accountElement),
+                                LocalDate.parse(getTagValue("date", accountElement)),
+                                Role.valueOf(getTagValue("role", accountElement)));
                         accountsToAdd.add(curAccount);
                     }
                 }
@@ -243,11 +330,18 @@ public class ModifyAccounts extends DatabaseController {
                 ifAccountDBExists.close();
                 closeConnection();
             } catch (SQLException e) {
+                logger.log(Level.WARNING, "Exception caught for admin XML.", e);
                 System.out.println("SQLException caught.");
             }
         }
     }
 
+    /**
+     * A method to add multiple accounts to the account database
+     * 
+     * @param accounts is the list of account objects that we want to add to the database
+     * @throws SQLException if a SQL error occurs during execution, also is thrown if an error occurs while closing connection
+     */
     private boolean addAccounts(List<Account> accounts) throws SQLException {
         if (accounts == null || accounts.size() == 0) {
             return false; // cannot add zero accounts;
@@ -274,6 +368,7 @@ public class ModifyAccounts extends DatabaseController {
                 addAccountToDB.close();
                 closeConnection();
             } catch (SQLException e) {
+                logger.log(Level.WARNING, "Exception caught for adding account.", e);
                 System.out.println("SQLException caught.");
             }
         }

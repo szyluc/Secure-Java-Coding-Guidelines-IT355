@@ -3,6 +3,7 @@ Search for a book: Allows you to search a book by name, author, or category and 
 Rent a book: Allows you to rent a new book by providing the id of that book
 Return a book: Allows you return a book you have rented by providing the id of the book
 Look up another account: Allows you to lookup an account by UUID and get information such as the name, date of birth, and rented books
+Compare accounts: Allows you to compare the books between two users
 Add a book: Allows you to add a book by entering the name, author, and genre
 Delete a book: Allows you to delete a book by providing the id of the book
 Help: Displays some information about the commands in the menu

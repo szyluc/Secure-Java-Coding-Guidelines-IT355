@@ -30,7 +30,7 @@ public class ReadCharacters {
             }
             file.close();
         } catch (Exception e) {
-            System.out.println("Exception caught");
+            e.printStackTrace();
         }
         
 

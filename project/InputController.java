@@ -30,17 +30,6 @@ public class InputController {
     private static final Logger logger = Logger.getLogger("InputControllerLogger");
     FileHandler fh;
 
-    try {
-        fh = new FileHandler("./logs/InputController.log");
-        logger.addHandler(fh);
-        SimpleFormatter formatter = new SimpleFormatter();
-        fh.setFormatter(formatter);
-    } catch (SecurityException e) {
-        System.out.println("SecurityException caught");
-    } catch (IOException e) {
-        System.out.println("IOException caught");
-    }
-
     /**
      * Options:
      * 1) Login
@@ -63,20 +52,79 @@ public class InputController {
     Scanner scanner = new Scanner(System.in);
     Account currentAccount;
 
-    public void startMenu() {
-        System.out.println("\nWelcome to the ISU Library!\n");
-    }
-    
-    public void loginMenu() throws SQLException, Exception {
-        System.out.println(INPUT_LINES);
-        System.out.println("(1) Log In"); // leads to log in through UUID
-        System.out.println("(2) Create Account"); // leads to account creation
-        System.out.println("(3) Help"); // exits program
-        System.out.println("(4) Exit"); // exits program
-        System.out.println(INPUT_LINES + "\n");
-        handleLogin(); // with the way it is implemented, handleLogin() should be recursive
+    /**
+     * A method to initialize the log file
+     */
+    public void init() {
+        try {
+            fh = new FileHandler("./logs/InputController.log");
+            logger.addHandler(fh);
+            SimpleFormatter formatter = new SimpleFormatter();
+            fh.setFormatter(formatter);
+            logger.setUseParentHandlers(false);
+        } catch (SecurityException e) {
+            System.out.println("SecurityException caught");
+        } catch (IOException e) {
+            System.out.println("IOException caught");
+        }
     }
 
+    /**
+     * A method that displays the menu when the program starts up
+     * 
+     * @throws SQLException if a SQL error occurs during execution
+     * @throws Exception if an error occurs during execution
+     */
+    public void startMenu() throws SQLException, Exception {
+        boolean running = true;
+
+        while (running) {
+            System.out.println("\nWelcome to the ISU Library!\n");
+            System.out.println(INPUT_LINES);
+            System.out.println("(1) Log In"); // leads to log in through UUID
+            System.out.println("(2) Create Account"); // leads to account creation
+            System.out.println("(3) Help"); // exits program
+            System.out.println("(4) Exit"); // exits program
+            System.out.println(INPUT_LINES + "\n");
+
+            int choice = numericInputValidation(4);
+            switch (choice) {
+                case 1: // LOGIN
+                    handleLogin();
+                    running = false;
+                    break;
+                case 2: // CREATE ACCOUNT
+                    handleCreateAccount();
+                    running = false;
+                    break;
+                case 3: // HELP
+                    readHelpInfo("./docs/loginMenuHelp.txt");
+                    break;
+                case 4: // EXIT
+                    running = false;
+                    break;
+            }
+        }
+    }
+    
+    /**
+     * A method that displays the login menu when selected
+     * 
+     * @throws SQLException if a SQL error occurs during execution
+     * @throws Exception if an error occurs during execution
+     */
+    public void loginMenu() throws SQLException, Exception {
+        
+        handleLogin(); // with the way it is implemented, handleLogin() should be recursive
+    }
+    
+    /**
+     * A method that displays the admin menu if the account is set to admin
+     * If it is not, then the user menu will be displayed
+     * 
+     * @throws SQLException if a SQL error occurs during execution
+     * @throws Exception if an error occurs during execution
+     */
     public void userMainMenu() throws SQLException, Exception {
         if (currentAccount.getAccountHolderRole() == Role.ADMIN) {
             adminMainMenu();
@@ -85,67 +133,156 @@ public class InputController {
         }
     }
 
+    /**
+     * A method that handles when a user creates an account
+     * 
+     * @throws SQLException if a SQL error occurs during execution
+     */
+    private void handleCreateAccount() throws SQLException {
+        ModifyAccounts modifyAccounts = new ModifyAccounts();
+        String name = stringInputValidation(NAME_INPUT_PROVIDE);
+        LocalDate birthdate = dateInputValidation();
+        Account newAccount = new Account(name, birthdate, Role.MEMBER);
+        modifyAccounts.addAccount(newAccount);
+        currentAccount = newAccount; // current user is the newly made account.
+        System.out.println("\nYour account ID: " + currentAccount.getAccountId());
+        System.out.println("Important! Store this ID in a secure place for future logins.");
+    }
+
+    /**
+     * A method that handles the user login
+     * 
+     * @throws SQLException if a SQL error occurs during execution
+     * @throws Exception if an error occurs during execution
+     */
     private void handleLogin() throws SQLException, Exception {
         ModifyAccounts modifyAccounts = new ModifyAccounts();
-        int choice = numericInputValidation(4);
-        switch (choice) {
-            case 1: // LOGIN
-                UUID id = userLoginValidation(modifyAccounts);
-                currentAccount = modifyAccounts.getAccount(id);
-                userMainMenu();
-                break;
-            case 2: // CREATE ACCOUNT
-                String name = stringInputValidation(NAME_INPUT_PROVIDE);
-                System.out.print(DATE_INPUT_PROVIDE);
-                LocalDate birthdate = dateInputValidation();
-                Account newAccount = new Account(name, birthdate, Role.MEMBER);
-                modifyAccounts.addAccount(newAccount);
-                currentAccount = newAccount; // current user is the newly made account.
-                System.out.println("\nYour account ID: " + currentAccount.getAccountId());
-                System.out.println("Important! Store this ID in a secure place for future logins.");
-                userMainMenu();
-                break;
-            case 3: // HELP
-                readHelpInfo("./docs/loginMenuHelp.txt");
-                loginMenu();
-                break;
-            case 4: // EXIT
-                return;
+        UUID id = userLoginValidation(modifyAccounts, UUID_INPUT_PROVIDE);
+        currentAccount = modifyAccounts.getAccount(id);
+        userMainMenu();
+    }
+
+    /**
+     * A method that handles the main menu screen for the member account
+     * 
+     * @throws SQLException if a SQL error occurs during execution
+     * @throws Exception if an error occurs during execution
+     */
+    private void memberMainMenu() throws SQLException, Exception {
+        boolean running = true;
+        while (running) {
+            System.out.println("\n" + INPUT_LINES);
+            System.out.println("Welcome, " + currentAccount.getAccountHolderName() + "!\n");
+            System.out.println("(1) View Account "); // leads to display of any books currently checked out
+            System.out.println("(2) Search for a book"); // leads to separate menu for book search
+            System.out.println("(3) Rent a book"); // leads user to menu for renting book
+            System.out.println("(4) Return a book"); // leads user to menu for returning book
+            System.out.println("(5) Help"); // displays helps information to user
+            System.out.println("(6) Log Out"); // logs user out
+            System.out.println("(7) Exit"); // exits program
+            System.out.println(INPUT_LINES);
+
+            int choice = numericInputValidation(7);
+            switch (choice) {
+                case 1:
+                    displayUserBooks();
+                    break;
+                case 2:
+                    searchMenu();
+                    break;
+                case 3:
+                    handleRentBookMenu();
+                    break;
+                case 4:
+                    handleReturnBookMenu();
+                    break;
+                case 5:
+                    readHelpInfo("./docs/memberMenuHelp.txt");
+                    break;
+                case 6:
+                    currentAccount = null;
+                    startMenu();
+                    running = false;
+                    break;
+                case 7:
+                    running = false;
+                    break;
+            }
         }
     }
 
-    private void memberMainMenu() throws SQLException, Exception {
-        System.out.println("\n" + INPUT_LINES);
-        System.out.println("Welcome, " + currentAccount.getAccountHolderName() + "!\n");
-        System.out.println("(1) View Account "); // leads to display of any books currently checked out
-        System.out.println("(2) Search for a book"); // leads to separate menu for book search
-        System.out.println("(3) Rent a book"); // leads user to menu for renting book
-        System.out.println("(4) Return a book"); // leads user to menu for returning book
-        System.out.println("(5) Help"); // displays helps information to user
-        System.out.println("(6) Log Out"); // logs user out
-        System.out.println("(7) Exit"); // exits program
-        System.out.println(INPUT_LINES);
-        handleUserMainMenu();
-    }
-
+    /**
+     * A method that displays the menu for the admin account
+     * 
+     * @throws SQLException if a SQL error occurs during execution
+     * @throws Exception if an error occurs during execution
+     */
     private void adminMainMenu() throws SQLException, Exception {
-        System.out.println("\n" + INPUT_LINES);
-        System.out.println("Welcome, " + currentAccount.getAccountHolderName() + "!\n");
-        System.out.println("(1) View account "); // leads to display of any books currently checked out
-        System.out.println("(2) Search for a book"); // leads to separate menu for book search
-        System.out.println("(3) Rent a book"); // leads user to menu for renting book
-        System.out.println("(4) Return a book"); // leads user to menu for returning book
-        System.out.println("(5) Look up another account"); // leads to separate menu for UUID search
-        System.out.println("(6) Compare accounts"); // leads to seperate menu for comparing accounts
-        System.out.println("(7) Add a book"); // leads to separate menu for adding book
-        System.out.println("(8) Delete a book"); // leads to separate menu for deleting book
-        System.out.println("(9) Help"); // displays helps information to user
-        System.out.println("(10) Logout"); // logs user out
-        System.out.println("(11) Exit"); // exits program
-        System.out.println(INPUT_LINES);
-        handleAdminMainMenu();
+        boolean running = true;
+
+        while (running) {
+            System.out.println("\n" + INPUT_LINES);
+            System.out.println("Welcome, " + currentAccount.getAccountHolderName() + "!\n");
+            System.out.println("(1) View account "); // leads to display of any books currently checked out
+            System.out.println("(2) Search for a book"); // leads to separate menu for book search
+            System.out.println("(3) Rent a book"); // leads user to menu for renting book
+            System.out.println("(4) Return a book"); // leads user to menu for returning book
+            System.out.println("(5) Look up another account"); // leads to separate menu for UUID search
+            System.out.println("(6) Compare accounts"); // leads to seperate menu for comparing accounts
+            System.out.println("(7) Add a book"); // leads to separate menu for adding book
+            System.out.println("(8) Delete a book"); // leads to separate menu for deleting book
+            System.out.println("(9) Help"); // displays helps information to user
+            System.out.println("(10) Logout"); // logs user out
+            System.out.println("(11) Exit"); // exits program
+            System.out.println(INPUT_LINES);
+
+            int choice = numericInputValidation(11);
+            switch (choice) {
+                case 1:
+                    displayUserBooks();
+                    break;
+                case 2:
+                    searchMenu();
+                    break;
+                case 3:
+                    handleRentBookMenu();
+                    break;
+                case 4:
+                    handleReturnBookMenu();
+                    break;
+                case 5:
+                    adminAccountLookUpMenu();
+                    break;
+                case 6:
+                    compareAccountsMenu();
+                    break;
+                case 7:
+                    adminAddBookMenu();
+                    break;
+                case 8:
+                    adminDeleteBookMenu();
+                    break;
+                case 9:
+                    readHelpInfo("./docs/adminMenuHelp.txt");
+                    break;
+                case 10:
+                    currentAccount = null;
+                    running = false;
+                    startMenu();
+                    break;
+                case 11:
+                    running = false;
+                    return;
+            }
+        }
     }
 
+    /**
+     * A method that handles the search feature of the program
+     * 
+     * @throws SQLException if a SQL error occurs during execution
+     * @throws Exception if an error occurs during execution
+     */
     private void searchMenu() throws SQLException, Exception {
         System.out.println("\n" + INPUT_LINES);
         System.out.println("Select which filter to search by:");
@@ -158,10 +295,17 @@ public class InputController {
         handleSearchMenu();
     }
 
+    /**
+     * A method that allows an admin account to look up accounts
+     * 
+     * @throws SQLException if a SQL error occurs during execution
+     * @throws Exception if an error occurs during execution
+     */
     private void adminAccountLookUpMenu() throws SQLException
-    {
-        UUID id = uuidInputValidation("\nEnter account ID to lookup: ");
+    { 
         ModifyAccounts modifyAccounts = new ModifyAccounts();
+        System.out.println();
+        UUID id = userLoginValidation(modifyAccounts, "Enter account ID to lookup: ");
         Account lookedUpAccount = modifyAccounts.getAccount(id);
         System.out.println("\nAccount Name: " + lookedUpAccount.getAccountHolderName());
         System.out.println("Account Birth Date: " + lookedUpAccount.getAccountHolderBirthDate() + "\n");
@@ -178,6 +322,12 @@ public class InputController {
         }
     }
 
+    /**
+     * A method that allows an admin account to add a book to the database
+     * 
+     * @throws SQLException if a SQL error occurs during execution
+     * @throws Exception if an error occurs during execution
+     */
     private void adminAddBookMenu() throws SQLException, Exception {
         String bookName = stringInputValidation("\nEnter book name: ");
         String bookAuthor = stringInputValidation("\nEnter book author: ");
@@ -187,13 +337,34 @@ public class InputController {
         modifyBooks.addBook(newBook);
     }
 
+    /**
+     * A method that allows an admin account to delete a book from the database
+     * 
+     * @throws SQLException if a SQL error occurs during execution
+     * @throws Exception if an error occurs during execution
+     */
     private void adminDeleteBookMenu() throws SQLException, Exception {
-        UUID bookId = uuidInputValidation(UUID_BOOK_DELETE_PROVIDE);
         ModifyBooks modifyBooks = new ModifyBooks();
-        Book bookToDelete = modifyBooks.getBook(bookId);
-        modifyBooks.removeBook(bookToDelete.getBookId());
+        boolean invalidDelete = true;
+        System.out.println();
+        while (invalidDelete) {
+            UUID bookId = bookValidation(modifyBooks);
+            Book bookToDelete = modifyBooks.getBook(bookId);
+            boolean deleted = modifyBooks.removeBook(bookToDelete.getBookId());
+            if (deleted) {
+                System.out.println("\nYou have successfully deleted: " + bookToDelete.transactionString());
+                invalidDelete = false;
+            }
+        }
+        
     }
 
+    /**
+     * A method that handles the search menu functionality
+     * 
+     * @throws SQLException if a SQL error occurs during execution
+     * @throws Exception if an error occurs during execution
+     */
     private void handleSearchMenu() throws SQLException, Exception {
         int choice = numericInputValidation(5);
         ModifyBooks modifyBooks = new ModifyBooks();
@@ -203,7 +374,7 @@ public class InputController {
                 String bookName = stringInputValidation("Enter book name: ");
                 books = modifyBooks.getBookByName(bookName);
                 System.out.println(); // empty line
-                if(books.isEmpty()){
+                if (books.isEmpty()) {
                     System.out.println("No books found with that name.");
                 } else {
                     for (Book book : books) {
@@ -216,7 +387,7 @@ public class InputController {
                 String bookAuthor = stringInputValidation("Enter book author: ");
                 books = modifyBooks.getBookByAuthor(bookAuthor);
                 System.out.println();
-                if(books.isEmpty()){
+                if (books.isEmpty()) {
                     System.out.println("No books found by that author.");
                 } else {
                     for (Book book : books) {
@@ -232,7 +403,7 @@ public class InputController {
                 if (books.isEmpty()) {
                     System.out.println("No books found in that genre.");
                 } else {
-                    for (Book book: books) {
+                    for (Book book : books) {
                         System.out.println(book.toString());
                     }
                 }
@@ -248,230 +419,206 @@ public class InputController {
         }
     }
 
-    private void handleUserMainMenu() throws SQLException, Exception {
-        int choice = numericInputValidation(7);
-        switch (choice) {
-            case 1:
-                displayUserBooks();
-                userMainMenu();
-                break;
-            case 2:
-                searchMenu();
-                userMainMenu();
-                break;
-            case 3:
-                handleRentBookMenu();
-                userMainMenu();
-                break;
-            case 4:
-                handleReturnBookMenu();
-                userMainMenu();
-                break;
-            case 5:
-                readHelpInfo("./docs/memberMenuHelp.txt");
-                userMainMenu();
-                break;
-            case 6:
-                currentAccount = null;
-                loginMenu();
-                break;
-            case 7:
-                return;
-        }
-    }
-
-    private void handleAdminMainMenu() throws SQLException, Exception {
-        int choice = numericInputValidation(10);
-        switch (choice) {
-            case 1:
-                displayUserBooks();
-                userMainMenu();
-                break;
-            case 2:
-                searchMenu();
-                userMainMenu();
-                break;
-            case 3:
-                handleRentBookMenu();
-                userMainMenu();
-                break;
-            case 4:
-                handleReturnBookMenu();
-                userMainMenu();
-                break;
-            case 5:
-                adminAccountLookUpMenu();
-                userMainMenu();
-                break;
-            case 6:
-                compareAccountsMenu();
-                userMainMenu();
-                break;
-            case 7:
-                adminAddBookMenu();
-                userMainMenu();
-                break;
-            case 8:
-                adminDeleteBookMenu();
-                break;
-            case 9:
-                readHelpInfo("./docs/adminMenuHelp.txt");
-                userMainMenu();
-                break;
-            case 10:
-                currentAccount = null;
-                loginMenu();
-                break;
-            case 11:
-                return;
-        }
-    }
-
+    /**
+     * A method that handles the renting books functionality
+     * 
+     * @throws SQLException if a SQL error occurs during execution
+     * @throws Exception if an error occurs during execution
+     */
     private void handleRentBookMenu() throws SQLException, Exception {
+        System.out.println();
         ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
         ModifyBooks modifyBooks = new ModifyBooks();
-
         modifyRentedBooks.createRentedBooksTable(); // create rented book table if necessary
-
-        UUID bookId = bookTakenValidation(modifyRentedBooks, modifyBooks); 
+        UUID bookId = bookTakenValidation(modifyRentedBooks, modifyBooks);
 
         Book book = modifyBooks.getBook(bookId);
         LocalDateTime rentdate = modifyRentedBooks.rentBook(currentAccount, book);
         String path = System.getProperty("user.dir");
         System.out.println("\nYou have successfully checked out: " + book.transactionString());
-        System.out.println("Your receipt has been saved to: " + path + "/" + rentdate.toString() + ".xml");
+        System.out.println("Your receipt has been saved to: " + path + "/"
+                + rentdate.toString().replace(":", "-").replace(".", "-") + ".xml");
     }
 
-    private void handleReturnBookMenu() throws SQLException, Exception {
-        ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
-        ModifyBooks modifyBooks = new ModifyBooks();
+     /**
+     * A method that handles the returning books functionality
+     * 
+     * @throws SQLException if a SQL error occurs during execution
+     * @throws Exception if an error occurs during execution
+     */
+     private void handleReturnBookMenu() throws SQLException, Exception {
+         ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
+         ModifyBooks modifyBooks = new ModifyBooks();
+         System.out.println();
+        
+         UUID bookId = bookNotTakenValidation(modifyRentedBooks, modifyBooks);
 
-        UUID bookId = bookNotTakenValidation(modifyRentedBooks, modifyBooks);
+         Book book = modifyBooks.getBook(bookId);
+         modifyRentedBooks.returnBook(currentAccount.getAccountId(), bookId);
 
-        Book book = modifyBooks.getBook(bookId);
-        modifyRentedBooks.returnBook(currentAccount.getAccountId(), bookId);
+         System.out.println("\nYou have successfully returned: " + book.transactionString());
+     }
 
-        System.out.println("\nYou have successfully returned: " + book.transactionString());
-    }
+     /**
+     * A method that handles numeric input validation
+     * 
+     * @param maxVal which is the maximum input value that the menu will allow
+     * @return the valid integer inputted
+     */
+     private int numericInputValidation(int maxVal) {
+         System.out.print(NUM_INPUT_PROVIDE);
+         int choice = 0; // automatically out of range
+         boolean invalidInput = true;
+         while (invalidInput) {
+             try {
+                 choice = scanner.nextInt();
+                 if (choice < 1 || choice > maxVal) {
+                     System.out.println(invalidInputEnter(maxVal));
+                     System.out.print(NUM_INPUT_PROVIDE);
+                 } else {
+                     // if we get here, we have a good number!
+                     invalidInput = false;
+                 }
+             } catch (InputMismatchException e) {
+                 logger.log(Level.WARNING, "Invalid input.", e);
+                 System.out.println(invalidInputEnter(maxVal));
+                 System.out.print(NUM_INPUT_PROVIDE);
+             } finally {
+                 scanner.nextLine(); // consume new line character
+             }
+         }
+         return choice;
+     }
 
-    private int numericInputValidation(int maxVal) {
-        System.out.print(NUM_INPUT_PROVIDE);
-        int choice = 0; // automatically out of range
-        boolean invalidInput = true;
-        while (invalidInput) {
-            try {
-                choice = scanner.nextInt();
-                if (choice < 1 || choice > maxVal) {
-                    System.out.println(invalidInputEnter(maxVal));
-                    System.out.print(NUM_INPUT_PROVIDE);
-                } else {
-                    // if we get here, we have a good number!
-                    invalidInput = false;
-                }
-            } catch (InputMismatchException e) {
-                logger.log(Level.WARNING, "Invalid input.", e);
-                System.out.println(invalidInputEnter(maxVal));
-                System.out.print(NUM_INPUT_PROVIDE);
-            } finally {
-                scanner.nextLine(); // consume new line character
-            }
-        }
-        return choice;     
-    }
+     /**
+     * A method that validates the uuid input is valid
+     * 
+     * @param askingArgument is the question that the user needs to provide an answer to
+     * @return the valid UUID
+     */
+     private UUID uuidInputValidation(String askingArgument) {
+         String stringResult = null;
+         UUID uuidResult = null;
+         boolean invalidInput = true;
+         while (invalidInput) {
+             try {
+                 System.out.print(askingArgument);
+                 stringResult = scanner.nextLine();
+                 // Normalize string
+                 stringResult = Normalizer.normalize(stringResult, Form.NFKC);
+                 uuidResult = UUID.fromString(stringResult);
+                 // if we make it past this step, we have valid UUID!
+                 invalidInput = false;
+             } catch (IllegalArgumentException e) {
+                 logger.log(Level.WARNING, "Invalid ID input.", e);
+                 System.out.println("Invalid input. Please enter a valid ID.");
+             }  
+         }
+         return uuidResult;
+     }
 
-    private UUID uuidInputValidation(String askingArgument) {
-        String stringResult = null;
-        UUID uuidResult = null;
-        boolean invalidInput = true;
-        while (invalidInput) {
-            try {
-                System.out.print(askingArgument);
-                stringResult = scanner.nextLine();
-                // Normalize string
-                Normalizer.normalize(stringResult, Form.NFKC);
-                uuidResult = UUID.fromString(stringResult);
-                // if we make it past this step, we have valid UUID!
-                invalidInput = false;
-            } catch (IllegalArgumentException e) {
-                System.out.println("Invalid input. Please enter a valid ID.");
-                System.out.print(askingArgument);
-            }
-        }
-        return uuidResult;
-    }
-
+     /**
+     * A method that validates a date
+     * 
+     * @return the valid LocalDate object
+     */
     private LocalDate dateInputValidation() {
         String stringResult = null;
         LocalDate dateResult = null;
         boolean invalidInput = true;
         while (invalidInput) {
             try {
+                System.out.print(DATE_INPUT_PROVIDE);
                 stringResult = scanner.nextLine();
                 // Normalize string
-                Normalizer.normalize(stringResult, Form.NFKC);
+                stringResult = Normalizer.normalize(stringResult, Form.NFKC);
                 dateResult = LocalDate.parse(stringResult);
                 // if we make it past this step, we have a valid date!
                 invalidInput = false;
             } catch (DateTimeParseException e) {
+                logger.log(Level.WARNING, "Invalid date input.", e);
                 System.out.println("Invalid input. Please enter a valid date.");
-                System.out.print(DATE_INPUT_PROVIDE);
+                // System.out.print(DATE_INPUT_PROVIDE);
             }
         }
         return dateResult;
     }
 
-    private String stringInputValidation(String askingArgument) {
-        String stringResult = null;
-        boolean invalidInput = true;
-        while (invalidInput) {
-            System.out.print(askingArgument);
-            stringResult = scanner.nextLine();
-            // Normalize string
-            Normalizer.normalize(stringResult, Form.NFKC);
-            if (stringResult == null || stringResult.isEmpty() || stringResult.isBlank()) {
-                System.out.println("Invalid input. Please enter a valid string.");
-                System.out.print(askingArgument);
-            } else {
-                invalidInput = false;
-            }
-        }
-        return stringResult;
-    }
+     /**
+     * A method that handles string input validation
+     * 
+     * @param askingArgument is the question that the user needs to provide an answer to
+     * @return the validated string
+     */
+     private String stringInputValidation(String askingArgument) {
+         String stringResult = null;
+         boolean invalidInput = true;
+         while (invalidInput) {
+             System.out.print(askingArgument);
+             stringResult = scanner.nextLine();
+             // Normalize string
+             stringResult = Normalizer.normalize(stringResult, Form.NFKC);
+             if (stringResult == null || stringResult.isEmpty() || stringResult.isBlank()) {
+                 System.out.println("Invalid input. Please enter a valid string.");
+                 //System.out.print(askingArgument);
+             } else {
+                 invalidInput = false;
+             }
+         }
+         return stringResult;
+     }
 
-    private String invalidInputEnter(int maxValue) {
-        return "Invalid input. Please enter an integer between 1 and " + maxValue + ".";
-    }
+     /**
+      * A method that tells the user the correct range of values to enter
+      * 
+      * @param maxValue is the maximum integer value that the user can enter for the argument
+      * @return the invalid input message for the user
+      */
+     private String invalidInputEnter(int maxValue) {
+         return "Invalid input. Please enter an integer between 1 and " + maxValue + ".";
+     }
 
-    private void readHelpInfo(String filePath) {
-        try {
-            FileReader fileReader = new FileReader(filePath);
-            int buffer;
-            char data;
-            
-            try {
-                while ((buffer = fileReader.read()) != -1) {
-                    data = (char) buffer;
-                    System.out.print(data);
-                }
-            } finally {
-                try {
-                    fileReader.close();
-                } catch (IOException e) {
-                    System.out.println("IOException caught.");
-                }
-            }
-        } catch (FileNotFoundException e) {
-            System.out.println("FileNotFoundException caught");
-        } catch (IOException e) {
-            System.out.println("IOException caught");
-        }
-    }
+     /**
+      * a method to read the help info for a user
+      * 
+      * @param filePath which is the filepath for the text file with the help info
+      */
+     private void readHelpInfo(String filePath) {
+         try {
+             FileReader fileReader = new FileReader(filePath);
+             int buffer;
+             char data;
 
+             try {
+                System.out.println();
+                 while ((buffer = fileReader.read()) != -1) {
+                     data = (char) buffer;
+                     System.out.print(data);
+                 }
+             } finally {
+                 try {
+                     fileReader.close();
+                 } catch (IOException e) {
+                     System.out.println("IOException caught.");
+                 }
+             }
+         } catch (FileNotFoundException e) {
+             logger.log(Level.WARNING, "File not found.", e);
+             System.out.println("FileNotFoundException caught");
+         } catch (IOException e) {
+             logger.log(Level.WARNING, "IO Exception.", e);
+             System.out.println("IOException caught");
+         }
+     }
+
+    /**
+      * a method to read the help info for a user 
+      * 
+      * @param filePath which is the filepath for the text file with the help info
+      */
     private void compareAccountsMenu() throws SQLException{
-        System.out.println("Enter first account ID: ");
-        UUID id1 = UUID.fromString(scanner.nextLine());
-        System.out.println("Enter second account ID: ");
-        UUID id2 = UUID.fromString(scanner.nextLine());
+        UUID id1 = uuidInputValidation("Enter first account ID: ");
+        UUID id2 = uuidInputValidation("Enter second account ID: ");
         ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
         RentedBook[] account1Books = modifyRentedBooks.getRentedBooks(id1).toArray(new RentedBook[0]);
         RentedBook[] account2Books = modifyRentedBooks.getRentedBooks(id2).toArray(new RentedBook[0]);
@@ -482,7 +629,7 @@ public class InputController {
         }
     }
     
-        private UUID bookNotTakenValidation(ModifyRentedBooks rentedBooks, ModifyBooks books) throws SQLException {
+    private UUID bookNotTakenValidation(ModifyRentedBooks rentedBooks, ModifyBooks books) throws SQLException {
         boolean invalidId = true;
         UUID bookId = null;
 
@@ -498,48 +645,89 @@ public class InputController {
         }
         return bookId;
     }
+     
+     /**
+      * a method to validate if the book can be rented or not
+      * 
+      * @param rentedBooks which is the books that are currently rented
+      * @param books which is the available to rent books
+      * @throws SQLException if a SQL error occurs during execution
+      * @return the book ID if the book is taken
+      */
+     private UUID bookTakenValidation(ModifyRentedBooks rentedBooks, ModifyBooks books) throws SQLException {
+         // checks if the passed book is either (1) currently rented or (2) does not exist
+         boolean invalidId = true;
+         UUID bookId = null;
+         // first, we must validate the UUID input.
+         while (invalidId) {
+             bookId = uuidInputValidation(UUID_BOOK_RENT_PROVIDE);
+             if ((rentedBooks.getRowCount("b_id", bookId.toString())) > 0) {
+                 System.out.println("This book ID is currently rented out. Please try again.");
+             } else if (books.getRowCount("book_id", bookId.toString()) == 0) {
+                 System.out.println("This book ID does not exist. Please try again.");
+             } else {
+                 invalidId = false;
+             }
+         }
+         return bookId;
+     }
 
-    private UUID bookTakenValidation(ModifyRentedBooks rentedBooks, ModifyBooks books) throws SQLException {
-        // checks if the passed book is either (1) currently rented or (2) does not exist
-        boolean invalidId = true;
-        UUID bookId = null;
-        // first, we must validate the UUID input.
-        while (invalidId) {
-            bookId = uuidInputValidation(UUID_BOOK_RENT_PROVIDE);
-            if ((rentedBooks.getRowCount("b_id", bookId.toString())) > 0) {
-                System.out.println("This book ID is currently rented out. Please try again.");
-            } else if (books.getRowCount("book_id", bookId.toString()) == 0) {
-                System.out.println("This book ID does not exist. Please try again.");
-            } else {
-                invalidId = false;
-            }
-        }
-        return bookId;
-    }
+     /**
+      * a method to handle displaying the books checked out for a user
+      * 
+      * @throws Exception if an error occurs while execution
+      */
+     private void displayUserBooks() throws Exception {
+         ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
+         ModifyBooks modifyBooks = new ModifyBooks();
+         if (modifyRentedBooks.getRowCount("a_id", currentAccount.getAccountId().toString()) == 0) {
+             System.out.println("\nYou do not have any books checked out.");
+         } else {
+             List<RentedBook> rentedBooks = modifyRentedBooks.getRentedBooks(currentAccount.getAccountId());
+             System.out.println("\nRented Books:");
+             for (RentedBook rentedBook : rentedBooks) {
+                 Book book = modifyBooks.getBook(rentedBook.getBookID());
+                 System.out.println(book.toString());
+             }
+         }
+     }
+    
+     /**
+      * a method to handle if a book exists in the database
+      * 
+      * @param books which is the book we want to validate
+      * @throws SQLException if a SQL error occurs during execution
+      * @return the UUID of the book if it exists
+      * 
+      */
+     private UUID bookValidation(ModifyBooks books) throws SQLException {
+         boolean invalidId = true;
+         UUID bookId = null;
 
-    private void displayUserBooks() throws Exception {
-        ModifyRentedBooks modifyRentedBooks = new ModifyRentedBooks();
-        modifyRentedBooks.createRentedBooksTable(); // create rented book table if necessary
-        ModifyBooks modifyBooks = new ModifyBooks();
-        modifyBooks.createBookTable(); // create book table if necessary
-        if (modifyRentedBooks.getRowCount("a_id", currentAccount.getAccountId().toString()) == 0) {
-            System.out.println("\nYou do not have any books checked out.");
-        } else {
-            List<RentedBook> rentedBooks = modifyRentedBooks.getRentedBooks(currentAccount.getAccountId());
-            System.out.println("\nRented Books:");
-            for (RentedBook rentedBook : rentedBooks) {
-                Book book = modifyBooks.getBook(rentedBook.getBookID());
-                System.out.println(book.toString());
-            }
-        }
-    }
+         while (invalidId) {
+             bookId = uuidInputValidation(UUID_BOOK_DELETE_PROVIDE);
+             if ((books.getRowCount("book_id", bookId.toString())) == 0) {
+                 System.out.println("This book ID does not exist. Please try again.");
+             } else {
+                 invalidId = false;
+             }
+         }
+         return bookId;
+     }
 
-    private UUID userLoginValidation(ModifyAccounts accounts) throws SQLException {
+     /**
+      * a method to validate if user login is valid
+      * 
+      * @param accounts which are the account we want to verify
+      * @throws SQLException if a SQL error occurs during execution
+      * @return the UUID of the account if it exists
+      */
+    private UUID userLoginValidation(ModifyAccounts accounts, String askingArgument) throws SQLException {
         boolean invalidId = true;
         UUID accountId = null;
 
         while (invalidId) {
-            accountId = uuidInputValidation(UUID_INPUT_PROVIDE);
+            accountId = uuidInputValidation(askingArgument);
             if ((accounts.getRowCount("account_id", accountId.toString())) == 0) {
                 System.out.println("This account ID does not exist. Please try again.");
             } else {
@@ -549,6 +737,9 @@ public class InputController {
         return accountId;
     }
 
+    /**
+     * A simple cleanup method that closes the current scanner
+     */
     public void cleanUp() {
         scanner.close();
     }

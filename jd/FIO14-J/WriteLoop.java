@@ -33,7 +33,7 @@ public class WriteLoop {
                         writer.write("Looping Stopped\n");
                         writer.close();
                     } catch (Exception e) {
-                        System.out.println("Exception caught");
+                        e.printStackTrace();
                     }
                 }
             }));
@@ -50,7 +50,7 @@ public class WriteLoop {
             }
             Runtime.getRuntime().exit(1);
         } catch (Exception e) {
-            System.out.println("Exception caught.");
+            e.printStackTrace();
         }
     }
 

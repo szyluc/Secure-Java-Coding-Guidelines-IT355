@@ -15,6 +15,7 @@ public class Driver {
         InputController inputController = new InputController();
         ModifyBooks books = new ModifyBooks();
         ModifyAccounts accounts = new ModifyAccounts();
+        ModifyRentedBooks rentedBooks = new ModifyRentedBooks();
         // IDS07-J: Only load files by constructing safe File objects directly.
         // The filenames are hardcoded so there is no attack surface for command injection.
         File booksXML = new File("./books.xml");
@@ -30,32 +31,41 @@ public class Driver {
             @Override
             public void run() {
                 try {
-                    books.importBooks(booksXML); // import pre-specified books
                     accounts.importAdmins(adminsXML); // import pre-specified admins
+                    books.importBooks(booksXML); // import pre-specified books
                 } catch (SQLException sqlE) {
                     System.out.println("SQLException caught.");
                 } catch(Exception e) {
-                    System.out.println("Exception caught.");
+                    System.out.println("ImportThread Exception caught.");
                 }
             }
         });
-
-         // Use thread.start() instead of run before menu starts
-        importThread.start();
         
         try {
+            accounts.createAccountTable();
+            rentedBooks.createRentedBooksTable();
+            books.createBookTable();
+
+            // Use thread.start() instead of run before menu starts
+            importThread.start();
+            importThread.join();
+
+            books.init();
+            accounts.init();
+            rentedBooks.init();
+
+            inputController.init();
             inputController.startMenu();
-            inputController.loginMenu();
             inputController.userMainMenu();
         } catch (SQLException sqlE) {
             System.out.println("SQLException caught.");
         } catch (Exception e) {
-            System.out.println("Exception caught.");
+            System.out.println("User Main Menu Exception caught.");
         } finally {
             try {
                 inputController.cleanUp();
             } catch (Exception e) {
-                System.out.println("Exception caught.");
+                System.out.println("Input Controller Cleanup Exception caught.");
             }
         }
         

@@ -1,4 +1,5 @@
 import java.io.File;
+import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,12 +20,12 @@ import java.util.List;
 import java.util.UUID;
 
 import java.io.Closeable;
+import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
-// MET12-J: Implements Closeable so the caller can explicitly release
-// resources with close() rather than a finalizer.
-public class ModifyRentedBooks extends DatabaseController implements Closeable {
+public class ModifyRentedBooks extends DatabaseController {
     private static final String RENTED_BOOKS_DB = """
         CREATE TABLE IF NOT EXISTS rented_books (
             b_id TEXT NOT NULL,
@@ -35,14 +36,43 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
             FOREIGN KEY (a_id) REFERENCES account(account_id)
         );
         """;
-
+    /**
+     * A final String variable that contains the name of the rented_books DB
+     */
     private static final String RENTED_BOOKS_DB_NAME = "rented_books";
-    private boolean closed = false;
 
+    private static final Logger logger = Logger.getLogger("ModifyRentedBooksLogger");
+    FileHandler fh;
+
+    /**
+     * A method to initialize the log file
+     */
+    public void init() {
+        try {
+            fh = new FileHandler("./logs/ModifyRentedBooks.log");
+            logger.addHandler(fh);
+            SimpleFormatter formatter = new SimpleFormatter();
+            fh.setFormatter(formatter);
+            logger.setUseParentHandlers(false);
+        } catch (SecurityException e) {
+            System.out.println("SecurityException caught");
+        } catch (IOException e) {
+            System.out.println("IOException caught");
+        }
+    }
+
+    /**
+     * Calls the constructor of the DatabaseController with the rented_books database name
+     */
     public ModifyRentedBooks() {
         super(RENTED_BOOKS_DB_NAME);
     }
 
+    /**
+     * Creates a new rented_books database when called
+     * @throws Exception if an error occurs during runtime of the method
+     * @throws SQLException if an error occurs while closing the SQL database connection
+     */
     public void createRentedBooksTable() throws Exception {
         openConnection();
         Statement createRentedBookDB = connection.createStatement();
@@ -54,11 +84,23 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
                 createRentedBookDB.close();
                 closeConnection();
             } catch (SQLException e) {
+                logger.log(Level.WARNING, "Exception caught for creating RentedBooks table.", e);
                 System.out.println("SQLException caught.");
             }
         }
     }
 
+    /**
+     * Tracks the time that the book was rented out while adding it to the rented_books database.
+     * Also adds the book to the rented_book database so that it cannot be checked out by another customer.
+     * 
+     * @param account is the account that is checking out the book
+     * @param book is the book so that we can retrieve the data from the SQL database
+     * @throws Exception by default if an error occurs during runtime that isn't already caught
+     * @throws IllegalArgumentException if any of the parameters are null
+     * @throws SQLException if an error occurs while closing the connection to the database
+     * @return the LocalDateTime object when the book is rented out
+     */
     public LocalDateTime rentBook(Account account, Book book) throws Exception {
        if(account == null) {
         throw new IllegalArgumentException();
@@ -66,7 +108,6 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
        if(book == null) {
         throw new IllegalArgumentException();
        }
-
        // Open connection
         openConnection();
 
@@ -89,13 +130,26 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
         } finally {
             try {
                 addRentedBookToDB.close();
+                // MET12-J: Do not use finalizers
+                // We are inherintly following MET12-J by forceably closing connections
+                // while they are no longer needed
                 closeConnection();
             } catch (SQLException e) {
+                logger.log(Level.WARNING, "Exception caught for renting a book.", e);
                 System.out.println("SQLException caught.");
             }
         }
     }
 
+    /**
+     * A method to handle book returns by updating databases associated with the books. Removes the book from the rented_books database
+     * 
+     * @param accountID is the unique accountID that is returning the book, so we can remove it from their rented_books database
+     * @param bookID is the unique bookID for a book so that we know what book the user is returning
+     * @throws SQLException if a SQL error occurs during execution, also happens when trying to close the connection
+     * @throws IllegalArgumentException if the accountID or bookID provided is null
+     * @return if the book return was successful  
+     */
     public boolean returnBook(UUID accountID, UUID bookID) throws SQLException {
         if(accountID == null) {
             throw new IllegalArgumentException();
@@ -126,11 +180,21 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
                 removeRentedBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
+                logger.log(Level.WARNING, "Exception caught for returning book.", e);
                 System.out.println("SQLException caught.");
             }
         }
     }
 
+    /**
+     * A method to return a RentedBook object from the rented_books database
+     * 
+     * @param accountID is the unique accountID of the account that is accessing their rented_books database
+     * @param bookID is the unique bookID of the book we want to return from the rented_books database
+     * @throws SQLException if a SQL error occurs during execution, also gets thrown if error occurs while closing the connection
+     * @throws IllegalArgumentException if either the accountID or bookID provided are null
+     * @return the rented out book object
+     */
     public RentedBook getRentedBook(UUID accountID, UUID bookID) throws SQLException {
         
         if(accountID == null) {
@@ -166,11 +230,20 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
                 getRentedBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
+                logger.log(Level.WARNING, "Exception caught for getting rented book.", e);
                 System.out.println("SQLException caught.");
             }
         }
     }
 
+    /**
+     * A method to return if a specific bookID is rented out
+     * 
+     * @param bookID is the unique bookID of a book so we can find out if the books is in the rented_books database
+     * @throws SQLException if a SQL error occurs during execution, also gets thrown if an error occurs while closing the connection
+     * @throws IllegalArgumentException if the provided bookID parameter is equal to null
+     * @return whether the provided book is rented out or not
+     */
     public boolean isRented(UUID bookID) throws SQLException {
 
         if(bookID == null) {
@@ -200,14 +273,23 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
                 getRentedBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
+                logger.log(Level.WARNING, "Exception caught for checking if book is rented.", e);
                 System.out.println("SQLException caught.");
             }
         }
     }
 
+    /**
+     * A method to return the full list of rented out books for a user
+     * 
+     * @param accountID is the unique accountID for a user, so that we can find which books the user rented out
+     * @throws SQLException if a SQL error occurs during execution, also gets thrown if an error occurs while closing the connection
+     * @throws IllegalArgumentException if the parameter accountID is equal to null
+     * @return a list of all rented books under the accountID provided
+     */
     public List<RentedBook> getRentedBooks(UUID accountID) throws SQLException {
-       
-        if(accountID == null) {
+
+        if (accountID == null) {
             throw new IllegalArgumentException();
         }
         // Open connection
@@ -236,11 +318,18 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
                 getRentedBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
+                logger.log(Level.WARNING, "Exception caught for fetching rented book list.", e);
                 System.out.println("SQLException caught.");
             }
         }
     }
 
+    /**
+     * A method that handles creating the receipt after a book is rented out by a User
+     * @param curBook is the book object that the user is choosing to rent out
+     * @param nowDate is the current local date so that we can timestamp when this transaction occured
+     * @throws Exception if an error occurs during execution
+     */
     private void makeReceipt(Book curBook, LocalDateTime nowDate) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -279,21 +368,8 @@ public class ModifyRentedBooks extends DatabaseController implements Closeable {
             receiptsDir.mkdirs();
         }
 
-        StreamResult result = new StreamResult("receipts/" + nowDate.toString() + ".xml");
+        StreamResult result = new StreamResult("receipts/" + nowDate.toString().replace(":", "-").replace(".", "-") + ".xml");
         transformer.transform(source, result);
-    }
-
-    // MET12-J: Explicit cleanup, release any held resources
-    @Override
-    public void close() {
-        if (!closed) {
-            closed = true;
-            try {
-                closeConnection();
-            } catch (Exception e) {
-                System.out.println("Exception caught.");
-            }
-        }
     }
     
 }
