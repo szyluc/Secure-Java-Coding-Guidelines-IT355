@@ -13,7 +13,15 @@ import java.util.Scanner;
  * subtotal provided by the user.
  */
 public class TaxCalculator {
-    public static final double TAX_RATE = 0.09;
+    public static final double TAX_RATE = 0.09; // 9% tax rate
+
+    /**
+     * The main method of the progarm which will take the subtotal 
+     * from the user, calculate the tax, and then calculate the total
+     * price which it will inform the user of. The tax here is a static
+     * final variable so it can be reused easily and will not change.
+     * @param args the arguments passed to the program
+     */
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
         System.out.println("Enter the subtotal of a purchase: ");

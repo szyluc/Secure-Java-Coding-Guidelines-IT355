@@ -19,6 +19,12 @@ import java.util.regex.Pattern;
  * attack on our system.
  */
 public class UsernameChecker {
+    /**
+     * The main method of the program which takes a username 
+     * as input from the user and properly normalizes it before
+     * validating it to ensure it is a valid username.
+     * @param args the arguments passed to the program
+     */
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
         System.out.println("Enter Username: ");

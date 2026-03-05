@@ -28,6 +28,8 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.w3c.dom.Element;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class extends DatabaseController and simplifies the calls.
@@ -35,21 +37,20 @@ import org.w3c.dom.Element;
 public class ModifyBooks extends DatabaseController {
 
     private static final String BOOK_DB = """
-        CREATE TABLE IF NOT EXISTS book (
-            book_id TEXT PRIMARY KEY,
-            book_name TEXT NOT NULL,
-            book_author TEXT NOT NULL,
-            book_category TEXT NOT NULL
-        );
-        """;
+            CREATE TABLE IF NOT EXISTS book (
+                book_id TEXT PRIMARY KEY,
+                book_name TEXT NOT NULL,
+                book_author TEXT NOT NULL,
+                book_category TEXT NOT NULL
+            );
+            """;
 
     private static final String BOOK_DB_NAME = "book";
 
-    private static final String BOOK_INSERT = "INSERT INTO " + BOOK_DB_NAME 
-    + "(book_id, book_name, book_author, book_category) VALUES (?, ?, ?, ?);";
+    private static final String BOOK_INSERT = "INSERT INTO " + BOOK_DB_NAME
+            + "(book_id, book_name, book_author, book_category) VALUES (?, ?, ?, ?);";
 
     private static final String BOOK_EXISTS = "SELECT name FROM sqlite_master WHERE type='table' AND name = ?";
-    
 
     /**
      * Default constructor for the ModifyBooks class.
@@ -76,7 +77,7 @@ public class ModifyBooks extends DatabaseController {
                 createBookDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -108,7 +109,7 @@ public class ModifyBooks extends DatabaseController {
                 addBookToDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -148,7 +149,7 @@ public class ModifyBooks extends DatabaseController {
                 removeBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -160,13 +161,13 @@ public class ModifyBooks extends DatabaseController {
      */
     public void updateBook(Book book) throws SQLException {
         openConnection();
-      
-        if(book == null) {
+
+        if (book == null) {
             throw new IllegalArgumentException("Book cannot be null");
         }
-        String updateBookString = "UPDATE " + BOOK_DB_NAME + " SET book_name = ?, book_author = ?, book_category = ? WHERE book_id = ?;";
+        String updateBookString = "UPDATE " + BOOK_DB_NAME
+                + " SET book_name = ?, book_author = ?, book_category = ? WHERE book_id = ?;";
 
-        String updateBookString = "UPDATE " + BOOK_DB_NAME + " SET book_name = ?, book_author = ?, book_category = ? WHERE book_id = ?;";
         PreparedStatement updateBook = getConnection().prepareStatement(updateBookString);
 
         try {
@@ -178,7 +179,7 @@ public class ModifyBooks extends DatabaseController {
             // Check if the book got updated
             int rows = updateBook.executeUpdate();
 
-            if(rows > 0) {
+            if (rows > 0) {
                 System.out.println("Book Updated Sucessfully");
             } else {
                 System.out.println("Book not found.");
@@ -188,7 +189,7 @@ public class ModifyBooks extends DatabaseController {
                 updateBook.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -220,82 +221,98 @@ public class ModifyBooks extends DatabaseController {
                 getBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
 
     public void importBooks(File xmlFile) throws Exception {
-        if(xmlFile == null || !xmlFile.exists()) {
+        if (xmlFile == null || !xmlFile.exists()) {
             throw new IllegalAccessException("Xml file not found");
+        } else if (!xmlFile.isFile()) {
+            throw new IllegalArgumentException("Invalid XML File");
         }
+
         openConnection();
         PreparedStatement ifBookDBExists = connection.prepareStatement(BOOK_EXISTS);
-        ifBookDBExists.setString(1, BOOK_DB_NAME);
-        ResultSet resultSet = ifBookDBExists.executeQuery();
-        closeConnection();
-        if (!resultSet.next()) {
-            InputSource xmlStream = new InputSource(new File("books.xml").getAbsolutePath());
-            SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            DefaultHandler defaultHandler = new DefaultHandler() {
-                public void warning(SAXParseException e) throws SAXException {
-                    throw e;
+        try {
+            ifBookDBExists.setString(1, BOOK_DB_NAME);
+            ResultSet resultSet = ifBookDBExists.executeQuery();
+            closeConnection();
+            if (!resultSet.next()) {
+                InputSource xmlStream = new InputSource(new File("books.xml").getAbsolutePath());
+                SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+                DefaultHandler defaultHandler = new DefaultHandler() {
+                    public void warning(SAXParseException e) throws SAXException {
+                        throw e;
+                    }
+                    public void error(SAXParseException e) throws SAXException {
+                        throw e;
+                    }
+                    public void fatalError(SAXParseException e) throws SAXException {
+                        throw e;
+                    }
+                };
+                StreamSource streamSource = new StreamSource(new File("books.xsd"));
+                try {
+                    Schema schema = schemaFactory.newSchema(streamSource);
+                    SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+                    saxParserFactory.setSchema(schema);
+                    SAXParser saxParser = saxParserFactory.newSAXParser();
+                    XMLReader xmlReader = saxParser.getXMLReader();
+                    xmlReader.setEntityResolver(new CustomResolver());
+                    saxParser.parse(xmlStream, defaultHandler);
+                } catch (ParserConfigurationException e) {
+                    throw new IOException("Unable to validate XML", e);
+                } catch (SAXException e) {
+                    throw new IOException("Invalid XML", e);
                 }
-                public void error(SAXParseException e) throws SAXException {
-                    throw e;
-                }
-                public void fatalError(SAXParseException e) throws SAXException {
-                    throw e;
-                }
-            };
-            StreamSource streamSource = new StreamSource(new File("books.xsd"));
-            try {
-                Schema schema = schemaFactory.newSchema(streamSource);
-                SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-                saxParserFactory.setSchema(schema);
-                SAXParser saxParser = saxParserFactory.newSAXParser();
-                XMLReader xmlReader = saxParser.getXMLReader();
-                xmlReader.setEntityResolver(new CustomResolver());
-                saxParser.parse(xmlStream, defaultHandler);
-            } catch (ParserConfigurationException e) {
-                throw new IOException("Unable to validate XML", e);
-            } catch (SAXException e) {
-                throw new IOException("Invalid XML", e);
-            }
+                // SER08-J: Rather than using deprecated AccessControlContext to restrict
+                // privileges during parsing, we can configure the XML parser itself to prevent it
+                // from accessing external resources or executing malicious content.
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                // Prevent external DTDs which prevents XXE attacks
+                factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+                // Prevent external general entities
+                factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+                // Prevent external parameter entities
+                factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+                // Prevent external DTD loading
+                factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+                factory.setXIncludeAware(false);
+                factory.setExpandEntityReferences(false);
 
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document = builder.parse(xmlFile);
+                DocumentBuilder builder = factory.newDocumentBuilder();
+                Document document = builder.parse(xmlFile);
 
-
-            ArrayList<Book> booksToAdd = new ArrayList<>();
-            NodeList booksNodeList = document.getElementsByTagName(BOOK_DB_NAME);
-            for (int i=0; i<booksNodeList.getLength(); i++) {
-                // NodeList bookInfo = document.getElementsByTagName(BOOK_DB_NAME);
-                Node curBookNode = booksNodeList.item(i);
-                if (curBookNode.getNodeType() == Node.ELEMENT_NODE) {
-                    Element bookElement = (Element) curBookNode;
-                    Book curBook = new Book(
-                        getTagValue("title", bookElement),
-                        getTagValue("author", bookElement),
-                        getTagValue("category", bookElement)
-                    );
-                    booksToAdd.add(curBook);
+                ArrayList<Book> booksToAdd = new ArrayList<>();
+                NodeList booksNodeList = document.getElementsByTagName(BOOK_DB_NAME);
+                for (int i = 0; i < booksNodeList.getLength(); i++) {
+                    // NodeList bookInfo = document.getElementsByTagName(BOOK_DB_NAME);
+                    Node curBookNode = booksNodeList.item(i);
+                    if (curBookNode.getNodeType() == Node.ELEMENT_NODE) {
+                        Element bookElement = (Element) curBookNode;
+                        Book curBook = new Book(
+                                getTagValue("title", bookElement),
+                                getTagValue("author", bookElement),
+                                getTagValue("category", bookElement));
+                        booksToAdd.add(curBook);
+                    }
+                    addBooks(booksToAdd);
                 }
-                addBooks(booksToAdd);
             }
         } finally {
             try {
                 ifBookDBExists.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
 
     public List<Book> getBookByName(String bookName) throws SQLException {
-        if(bookName == null || bookName.isEmpty()){
+        if (bookName == null || bookName.isEmpty()) {
             throw new IllegalArgumentException();
         }
         // Open connection
@@ -311,11 +328,10 @@ public class ModifyBooks extends DatabaseController {
             ResultSet resultSet = getBookByNameFromDB.executeQuery();
             while (resultSet.next()) {
                 Book curBook = new Book(
-                    UUID.fromString(resultSet.getString(1)),
-                    resultSet.getString(2),
-                    resultSet.getString(3),
-                    resultSet.getString(4)
-                );
+                        UUID.fromString(resultSet.getString(1)),
+                        resultSet.getString(2),
+                        resultSet.getString(3),
+                        resultSet.getString(4));
                 books.add(curBook);
             }
 
@@ -326,14 +342,14 @@ public class ModifyBooks extends DatabaseController {
                 getBookByNameFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
 
     public List<Book> getBookByAuthor(String bookAuthor) throws SQLException {
-        
-        if(bookAuthor == null || bookAuthor.isEmpty()){
+
+        if (bookAuthor == null || bookAuthor.isEmpty()) {
             throw new IllegalArgumentException();
         }
         // Open connection
@@ -347,14 +363,13 @@ public class ModifyBooks extends DatabaseController {
             getBookByAuthorFromDB.setString(1, bookAuthor);
             List<Book> books = new ArrayList<>();
             ResultSet resultSet = getBookByAuthorFromDB.executeQuery();
-            
+
             while (resultSet.next()) {
                 Book curBook = new Book(
-                    UUID.fromString(resultSet.getString(1)),
-                    resultSet.getString(2),
-                    resultSet.getString(3),
-                    resultSet.getString(4)
-                );
+                        UUID.fromString(resultSet.getString(1)),
+                        resultSet.getString(2),
+                        resultSet.getString(3),
+                        resultSet.getString(4));
                 books.add(curBook);
             }
 
@@ -365,14 +380,14 @@ public class ModifyBooks extends DatabaseController {
                 getBookByAuthorFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
 
     public List<Book> getBookByGenre(String bookGenre) throws SQLException {
-       
-       if(bookGenre == null || bookGenre.isEmpty()){
+
+        if (bookGenre == null || bookGenre.isEmpty()) {
             throw new IllegalArgumentException();
         }
 
@@ -387,14 +402,13 @@ public class ModifyBooks extends DatabaseController {
             getBookByGenreFromDB.setString(1, bookGenre);
             List<Book> books = new ArrayList<>();
             ResultSet resultSet = getBookByGenreFromDB.executeQuery();
-            
+
             while (resultSet.next()) {
                 Book curBook = new Book(
-                    UUID.fromString(resultSet.getString(1)),
-                    resultSet.getString(2),
-                    resultSet.getString(3),
-                    resultSet.getString(4)
-                );
+                        UUID.fromString(resultSet.getString(1)),
+                        resultSet.getString(2),
+                        resultSet.getString(3),
+                        resultSet.getString(4));
                 books.add(curBook);
             }
 
@@ -405,7 +419,7 @@ public class ModifyBooks extends DatabaseController {
                 getBookByGenreFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -421,7 +435,7 @@ public class ModifyBooks extends DatabaseController {
         try {
             createBookDB.executeUpdate(BOOK_DB);
 
-            for (Book curBook: books) {
+            for (Book curBook : books) {
                 PreparedStatement addBookToDB = connection.prepareStatement(BOOK_INSERT);
                 addBookToDB.setString(1, curBook.getBookId().toString());
                 addBookToDB.setString(2, curBook.getBookName());
@@ -435,8 +449,9 @@ public class ModifyBooks extends DatabaseController {
                 createBookDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
 }
+ 

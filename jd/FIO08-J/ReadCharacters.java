@@ -14,6 +14,11 @@ import java.io.FileReader;
  * ending the stream.
  */
 public class ReadCharacters {
+    /**
+     * The main method of the program which reads the input file and 
+     * prints the contents to the console with proper checks in place.
+     * @param args the arguments passed to the program
+     */
     public static void main(String[] args) {
         try {
             FileReader file = new FileReader("Input.txt");
@@ -25,7 +30,7 @@ public class ReadCharacters {
             }
             file.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Exception caught");
         }
         
 

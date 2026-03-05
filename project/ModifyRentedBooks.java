@@ -18,7 +18,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class ModifyRentedBooks extends DatabaseController {
+import java.io.Closeable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+// MET12-J: Implements Closeable so the caller can explicitly release
+// resources with close() rather than a finalizer.
+public class ModifyRentedBooks extends DatabaseController implements Closeable {
     private static final String RENTED_BOOKS_DB = """
         CREATE TABLE IF NOT EXISTS rented_books (
             b_id TEXT NOT NULL,
@@ -31,6 +37,7 @@ public class ModifyRentedBooks extends DatabaseController {
         """;
 
     private static final String RENTED_BOOKS_DB_NAME = "rented_books";
+    private boolean closed = false;
 
     public ModifyRentedBooks() {
         super(RENTED_BOOKS_DB_NAME);
@@ -47,7 +54,7 @@ public class ModifyRentedBooks extends DatabaseController {
                 createRentedBookDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -84,7 +91,7 @@ public class ModifyRentedBooks extends DatabaseController {
                 addRentedBookToDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -119,7 +126,7 @@ public class ModifyRentedBooks extends DatabaseController {
                 removeRentedBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -148,7 +155,7 @@ public class ModifyRentedBooks extends DatabaseController {
             if (resultSet.next()) {
                 UUID bookUUID = UUID.fromString(resultSet.getString(1));
                 UUID accountUUID = UUID.fromString(resultSet.getString(2));
-                LocalDate rentDate = LocalDate.parse(resultSet.getString(3));
+                LocalDateTime rentDate = LocalDateTime.parse(resultSet.getString(3));
                 curRentedBook = new RentedBook(bookUUID, accountUUID, rentDate);
             }
 
@@ -159,7 +166,7 @@ public class ModifyRentedBooks extends DatabaseController {
                 getRentedBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -193,7 +200,7 @@ public class ModifyRentedBooks extends DatabaseController {
                 getRentedBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -217,7 +224,7 @@ public class ModifyRentedBooks extends DatabaseController {
             while (resultSet.next()) {
                 UUID bookUUID = UUID.fromString(resultSet.getString(1));
                 UUID accountUUID = UUID.fromString(resultSet.getString(2));
-                LocalDate rentDate = LocalDate.parse(resultSet.getString(3));
+                LocalDateTime rentDate = LocalDateTime.parse(resultSet.getString(3));
                 RentedBook curRentedBook = new RentedBook(bookUUID, accountUUID, rentDate);
                 rentedBooks.add(curRentedBook);
             }
@@ -229,7 +236,7 @@ public class ModifyRentedBooks extends DatabaseController {
                 getRentedBookFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -274,6 +281,19 @@ public class ModifyRentedBooks extends DatabaseController {
 
         StreamResult result = new StreamResult("receipts/" + nowDate.toString() + ".xml");
         transformer.transform(source, result);
+    }
+
+    // MET12-J: Explicit cleanup, release any held resources
+    @Override
+    public void close() {
+        if (!closed) {
+            closed = true;
+            try {
+                closeConnection();
+            } catch (Exception e) {
+                System.out.println("Exception caught.");
+            }
+        }
     }
     
 }

@@ -13,6 +13,11 @@ import java.util.Scanner;
  * them together for the total average response time.
  */
 public class DelayCalculator {
+    /**
+     * The main method of the program which collects the input from 
+     * the user then calculates the average delay time using the formula.
+     * @param args the arguments passed to the program
+     */
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
         System.out.println("Enter the average response time in seconds when cache is hit: ");

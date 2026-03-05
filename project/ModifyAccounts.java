@@ -31,6 +31,8 @@ import org.w3c.dom.Element;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ModifyAccounts extends DatabaseController {
     private final String ACCOUNT_DB = """
@@ -63,7 +65,7 @@ public class ModifyAccounts extends DatabaseController {
                 createAccountDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -92,7 +94,7 @@ public class ModifyAccounts extends DatabaseController {
                 addAccountToDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -132,7 +134,7 @@ public class ModifyAccounts extends DatabaseController {
                 removeAccountFromDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
@@ -173,67 +175,66 @@ public class ModifyAccounts extends DatabaseController {
                 closeConnection();
                 
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }
 
     public void importAdmins(File xmlFile) throws Exception {
-        if(xmlFile == null || !xmlFile.exists()) {
-            throw new IllegalAccessException("File not exits");
-        }
         openConnection();
         PreparedStatement ifAccountDBExists = connection.prepareStatement(ACCOUNT_EXISTS);
-        ifAccountDBExists.setString(1, ACCOUNT_DB_NAME);
-        ResultSet resultSet = ifAccountDBExists.executeQuery();
-        closeConnection();
 
-        if (!resultSet.next()) {
-            InputSource xmlStream = new InputSource(new File("admins.xml").getAbsolutePath());
-            SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            DefaultHandler defaultHandler = new DefaultHandler() {
-                public void warning(SAXParseException e) throws SAXException {
-                    throw e;
-                }
-                public void error(SAXParseException e) throws SAXException {
-                    throw e;
-                }
-                public void fatalError(SAXParseException e) throws SAXException {
-                    throw e;
-                }
-            };
-            StreamSource streamSource = new StreamSource(new File("admins.xsd"));
-            try {
-                Schema schema = schemaFactory.newSchema(streamSource);
-                SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-                saxParserFactory.setSchema(schema);
-                SAXParser saxParser = saxParserFactory.newSAXParser();
-                XMLReader xmlReader = saxParser.getXMLReader();
-                xmlReader.setEntityResolver(new CustomResolver());
-                saxParser.parse(xmlStream, defaultHandler);
-            } catch (ParserConfigurationException e) {
-                throw new IOException("Unable to validate XML", e);
-            } catch (SAXException e) {
-                throw new IOException("Invalid XML", e);
-            }
+        try {
+            ifAccountDBExists.setString(1, ACCOUNT_DB_NAME);
+            ResultSet resultSet = ifAccountDBExists.executeQuery();
 
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document = builder.parse(xmlFile);
+            if (!resultSet.next()) {
+                InputSource xmlStream = new InputSource(new File("admins.xml").getAbsolutePath());
+                SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+                DefaultHandler defaultHandler = new DefaultHandler() {
+                    public void warning(SAXParseException e) throws SAXException {
+                        throw e;
+                    }
+                    public void error(SAXParseException e) throws SAXException {
+                        throw e;
+                    }
+                    public void fatalError(SAXParseException e) throws SAXException {
+                        throw e;
+                    }
+                };
+                StreamSource streamSource = new StreamSource(new File("admins.xsd"));
+                try {
+                    Schema schema = schemaFactory.newSchema(streamSource);
+                    SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+                    saxParserFactory.setSchema(schema);
+                    SAXParser saxParser = saxParserFactory.newSAXParser();
+                    XMLReader xmlReader = saxParser.getXMLReader();
+                    xmlReader.setEntityResolver(new CustomResolver());
+                    saxParser.parse(xmlStream, defaultHandler);
+                } catch (ParserConfigurationException e) {
+                    throw new IOException("Unable to validate XML", e);
+                } catch (SAXException e) {
+                    throw new IOException("Invalid XML", e);
+                }
 
-            List<Account> accountsToAdd = new ArrayList<>();
-            NodeList accountsNodeList = document.getElementsByTagName("admin");
-            for (int i=0; i<accountsNodeList.getLength(); i++) {
-                Node curAccountNode = accountsNodeList.item(i);
-                if (curAccountNode.getNodeType() == Node.ELEMENT_NODE) {
-                    Element accountElement = (Element) curAccountNode;
-                    Account curAccount = new Account(
-                        UUID.fromString(getTagValue("id", accountElement)),
-                        getTagValue("name", accountElement),
-                        LocalDate.parse(getTagValue("date", accountElement)),
-                        Role.valueOf(getTagValue("role", accountElement))
-                    );
-                    accountsToAdd.add(curAccount);
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder builder = factory.newDocumentBuilder();
+                Document document = builder.parse(xmlFile);
+
+                List<Account> accountsToAdd = new ArrayList<>();
+                NodeList accountsNodeList = document.getElementsByTagName("admin");
+                for (int i=0; i<accountsNodeList.getLength(); i++) {
+                    Node curAccountNode = accountsNodeList.item(i);
+                    if (curAccountNode.getNodeType() == Node.ELEMENT_NODE) {
+                        Element accountElement = (Element) curAccountNode;
+                        Account curAccount = new Account(
+                            UUID.fromString(getTagValue("id", accountElement)),
+                            getTagValue("name", accountElement),
+                            LocalDate.parse(getTagValue("date", accountElement)),
+                            Role.valueOf(getTagValue("role", accountElement))
+                        );
+                        accountsToAdd.add(curAccount);
+                    }
                 }
                 addAccounts(accountsToAdd);
             }
@@ -242,9 +243,9 @@ public class ModifyAccounts extends DatabaseController {
                 ifAccountDBExists.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
-        }        
+        }
     }
 
     private boolean addAccounts(List<Account> accounts) throws SQLException {
@@ -273,7 +274,7 @@ public class ModifyAccounts extends DatabaseController {
                 addAccountToDB.close();
                 closeConnection();
             } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("SQLException caught.");
             }
         }
     }

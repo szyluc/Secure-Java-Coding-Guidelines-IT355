@@ -15,6 +15,12 @@ import java.util.Scanner;
  * grade, we create a simple xml document with the grade data.
  */
 public class ReportCard {
+    /**
+     * The main method of the program which takes a grade as input 
+     * from the user, validates it, and then logs that information 
+     * in a simple XML document that we create.
+     * @param args the arguments passed to the program
+     */
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
         System.out.println("Enter Student Grade: ");
@@ -31,7 +37,7 @@ public class ReportCard {
              writer.write(report);
              writer.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Exception caught");
         }
         input.close();
 
