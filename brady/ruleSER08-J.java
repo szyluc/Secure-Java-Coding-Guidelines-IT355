@@ -37,7 +37,13 @@ class PluginLoader {
             });
         }
     }
-
+   /**
+   * A method that loads a configuration input that also handles with permission handling
+   * @param input is the object that we are reading
+   * @throw IOException if the deserialization fails
+   * @throw ClassNotFoundException if the class is not found
+   * @return A PluginConfig object if serialization is successful
+   */
     public static PluginConfig loadConfig(ObjectInputStream input) throws IOException, ClassNotFoundException {
         try {
             return AccessController.doPrivileged(
@@ -57,5 +63,6 @@ class PluginLoader {
 class PluginConfig implements Serializable {
     //code
 }
+
 
 
