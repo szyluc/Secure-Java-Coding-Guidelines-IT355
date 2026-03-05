@@ -5,6 +5,22 @@ This repository contains:
 - A group Java project in `project/`
 - Individual secure coding rule/recommendation examples in each team member's folder
 
+## Brief Project Description: Library Application
+
+The group project we built is a Library Application, created for both consumer and administrative use.
+
+The Library Application allows consumers and administrators to perform a variety of actions, such as:
+
+- Account login / creation
+- Rent a book from the library
+- Return a book to the library
+- See the current books rented
+- Search for books by name, author, and category
+- (Admin) Look up a user's account
+- (Admin) Compare two users' accounts
+- (Admin) Add a book to the library system
+- (Admin) Remove a book from the library system
+
 ## Navigate to this project
 
 From PowerShell:
