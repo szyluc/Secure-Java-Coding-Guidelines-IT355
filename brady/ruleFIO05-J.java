@@ -17,15 +17,23 @@ import java.nio.CharBuffer;
 
 final class BookTitle {
     private char[] titleChars;
-
+    /**
+    * A constructor method for a BookTitle object
+    * @param title is the title of the book
+    **/
     public BookTitle(String title) {
         titleChars = title.toCharArray();
     }
 
     // Safe: returns a read-only view so untrusted code cannot modify the title
+   /**
+    * A method for returning the title of a book buffer
+    * @return the title buffer of a book safely so it cannot be modified
+    **/
     public CharBuffer getTitleBuffer() {
         return CharBuffer.wrap(titleChars).asReadOnlyBuffer();
     }
 }
+
 
 

@@ -16,6 +16,12 @@ import java.util.Scanner;
  * as a simple list that they can use.
  */
 public class ListMaker {
+    /**
+     * The main method of the program which will create a file with 
+     * a conservative name and prompt a user for items that it will 
+     * enter in the list until the user decides that they are done.
+     * @param args the arguments passed to the program
+     */
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
         File itemList = new File("ItemList.txt");
@@ -24,13 +30,13 @@ public class ListMaker {
             listWriter = new FileWriter(itemList);
             System.out.println("Enter an item or type exit to stop:");
             String response = input.nextLine();
-            while (response != "stop") {
+            while (response != "exit") {
                 listWriter.write(response);
                 System.out.println("Enter an item or type exit to stop:");
                 response = input.nextLine();
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Exception caught");
         }
         input.close();
     }

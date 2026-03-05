@@ -22,12 +22,21 @@ import java.io.ObjectOutputStream;
 class UserAccount implements Serializable{
     // other methods can go here
 
-    //modify the writeObject() and readObject() methods
+    
+      /**
+      *A method that modifies the writeObject method to implement security
+      * @param out is the object that we are going to serialize the object to
+      * @throws IOException if an error occurs during execution
+      */
     private void writeObject(ObjectOutputStream out) throws IOException {
         performSecurityCheck();
         out.writeObject(account);
     }
-
+   /**
+      *A method that overrides the readObject function, can catch errors
+      * @param in is the object that we are going to deserialize from
+      * @throws IOException if an error occurs during execution
+      */
     private void readObject(ObjectInputStream in) throws IOException {
         in.defaultReadObject();
         //If the deserialized name does not match the default value created at construction time, duplicate the checks.
@@ -40,4 +49,5 @@ class UserAccount implements Serializable{
 
     }
    }
+
 

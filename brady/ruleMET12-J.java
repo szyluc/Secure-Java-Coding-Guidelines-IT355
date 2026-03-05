@@ -21,6 +21,10 @@ import java.io.Closeable;
 class NewClass implements Closeable{
     private boolean closed = false;
     private final Object finalizerGuardian = new Object(){
+       /**
+       * A method that overrides the finalize method so that we can use a safer method
+       * @throws Throwable if an error occurs during execution
+       */
         @Override
         protected void finalize() throws Throwable{
             try{
@@ -31,18 +35,25 @@ class NewClass implements Closeable{
             }
         }
     };
-
+      /**
+       * A close method which would be called instead of finalize
+       */
     public void close() {
         cleanup();
     }
-
+   /**
+       * A method that can release resources if not already closed
+       */
     private void cleanup() {
         if (!closed) {
             System.out.println("Releasing resources");
             closed = true;
         }
     }
-
+      /**
+       * A method that overrides finalize with the cleanup() method
+       * @throws Throwable if an error occurs during execution
+       */
     @Override
     protected void finalize() throws Throwable {
         try{
@@ -53,4 +64,5 @@ class NewClass implements Closeable{
         }
     }
 }
+
 

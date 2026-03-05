@@ -25,6 +25,7 @@ import java.io.File;
 class DirList {
    public static void main(String[] args) {
       File directory = new File(System.getProperty("directoryFile"));
+      // We can check if the provided directory file is not a directory.
       if (directory.isDirectory() == false) {
          System.out.println("Provided file is not a directory");
       } else {
@@ -38,6 +39,7 @@ class DirList {
    // You can then use this class as your directory reference, and it will only accept directories from the directoryFile
    // This ensures that it will never run Runtime.exec() if it is not needed.
    }
+
 
 
 

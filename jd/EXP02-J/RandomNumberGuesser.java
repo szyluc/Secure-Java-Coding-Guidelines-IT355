@@ -15,6 +15,11 @@ import java.util.Scanner;
  * sort of fun little guessing game.
  */
 public class RandomNumberGuesser {
+    /**
+     * The main method of the program which generates the randon numbers, 
+     * takes the user input, and compares the two arrays for equality.
+     * @param args the arguments passed to the program
+     */
     public static void main(String[] args) {
         int[] array = new int[5];
         int[] userArray = new int[5];
