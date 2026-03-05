@@ -10,7 +10,7 @@ This repository contains:
 From PowerShell:
 
 ```powershell
-cd "C:\Users\admin\Desktop\Other\Projects\School\Secure-Java-Coding-Guidelines-IT355"
+cd path\to\Secure-Java-Coding-Guidelines-IT355
 ```
 
 Then move into the runnable app folder:
