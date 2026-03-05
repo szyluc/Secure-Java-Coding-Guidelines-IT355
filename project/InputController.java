@@ -17,6 +17,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+/**
+ * Handles all the user interation for library system
+ * 
+ * InputController class handles menu navigation and validating user inputs
+ * Then calls methods based on the options selected by user
+ */
 public class InputController {
     private static final String NUM_INPUT_PROVIDE = "Please provide your input: ";
     private static final String UUID_INPUT_PROVIDE = "Please enter your account ID: ";
